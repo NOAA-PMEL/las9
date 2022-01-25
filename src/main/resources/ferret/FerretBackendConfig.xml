@@ -1,0 +1,257 @@
+<application>
+	<invoker base_dir="resources/ferret"
+                 executable="/usr/bin/python"
+                 time_limit="3600" template_dir="templates" 
+                 output_dir="/home/rhs/tomcat/webapps/las/output"
+                 http_base_url = "http://bilbo.weathertopconsulting.com:8282/las/output"
+                 iosp_script_dir="resources/iosp/scripts"
+                 iosp_temp_dir="/home/rhs/tomcat/content/las/conf/server/temp"
+                 iosp_data_dir="/home/rhs/tomcat/content/las/conf/server/data/dynamic"
+                 las_tfds_data_dir="/home/rhs/tomcat/content/las/conf/server/data"
+                 iosp_base_dir="resources/iosp"
+                 opendap_base_url = "http://bilbo.weathertopconsulting.com:8282/thredds/dodsC/output">
+        <arg>-cimport sys; import pyferret; (errval, errmsg) = pyferret.init(sys.argv[1:], True)</arg>
+        <arg>-nodisplay</arg>
+        <arg>-server</arg>
+        <arg>-script</arg>
+
+    </invoker>
+	<cacher dataset="true" dataset_queue_size="10000" dataset_size="40"
+		subset="true" subset_queue_size="10000" meta="true"
+		meta_queue_size="10000" />
+        <messages>
+           <message type="startsWith" level="error">
+              <key>PPL+ error</key>
+              <text>
+                An error occurred in the service that was creating your product.
+              </text>
+           </message>
+           <message type="startsWith" level="error">
+              <key>**ERROR Differencing is not implemented between unlike Curvilienar/Rectilinear grids</key>
+              <text>
+                  Differencing is not implemented between unlike Curvilienar/Rectilinear grids
+              </text>
+           </message>
+	   <message type="startsWith" level="error">
+              <key>**ERROR Invalid data type for variable</key>
+              <text>
+                  Cannot plot a non-numeric variable. Please choose another variable, or List the data.
+              </text>
+           </message>
+           <message type="startsWith" level="error">
+              <key>**ERROR Sorry. This server cannot yet perform a time analysis and a month-of-the-year constraint together.</key>
+              <text>
+                  Sorry. This server cannot yet perform a time analysis and a month-of-the-year constraint together.
+              </text>
+           </message>
+           <message type="startsWith" level="error">
+              <key>**ERROR "Desktop Access script not available for data on a Curvilinear grid</key>
+              <text>
+                Desktop Access script not available for data on a Curvilinear grid.
+              </text>
+           </message>
+           <message type="startsWith" level="error">
+              <key>**ERROR The variables must have the same dimensions</key>
+              <text>
+                In order to compare multiple variables, they must all share the same dimensions.
+              </text>
+           </message>
+           <message type="startsWith" level="error">
+              <key>**ERROR No t axis for variable</key>
+              <text>
+               Not all variables possess a time axis
+              </text>
+           </message>
+           <message type="startsWith" level="error">
+              <key>**ERROR No z axis for variable</key>
+              <text>
+                Not all variables possess a Z axis
+              </text>
+           </message>
+           <message type="startsWith" level="error">
+              <key>**ERROR No x axis for variable</key>
+              <text>
+                Not all variables possess a Longitude axis
+              </text>
+           </message>
+           <message type="startsWith" level="error">
+              <key>**ERROR No y axis for variable</key>
+              <text>
+                Not all variables possess a Latitude axis
+              </text>
+           </message>
+           <message type="startsWith" level="error">
+              <key>**ERROR The t region is too small. It reduces to a single point.</key>
+              <text>
+                The time region requested reduces to a single point and is too small.
+              </text>
+           </message>
+           <message type="startsWith" level="error">
+              <key>**ERROR The z region is too small. It reduces to a single point.</key>
+              <text>
+                The Z region requested reduces to a single point and is too small.                
+              </text>
+           </message>
+           <message type="startsWith" level="error">
+              <key>**ERROR The x region is too small. It reduces to a single point.</key>
+              <text>                
+                The longitude region requested reduces to a single point and is too small.
+              </text>
+           </message>
+           <message type="startsWith" level="error">
+              <key>**ERROR The y region is too small. It reduces to a single point.</key>
+              <text>
+                The latitude region requested reduces to a single point and is too small.                
+              </text>
+           </message>
+           <message type="startsWith" level="error">
+              <key>*** NOTE: unrepairable repeated axis coords</key>
+              <text>
+                The dataset has an invalid coordinate axis. 
+              </text>
+           </message>
+           <message type="startsWith" level="error">
+              <key>*** NOTE: Coordinates out of order or missing</key>
+              <text>
+                The dataset has an invalid coordinate axis. 
+              </text>
+           </message>
+           <message type="startsWith" level="error">
+              <key>*** NOTE: calendar attribute on axis</key>
+              <text>
+                A time axis in the dataset has an invalid calendar definition. 
+              </text>
+           </message>
+           <message type="startsWith" level="error">
+              <key>*** NOTE: A dummy value of 1</key>
+              <text>
+                A coordinate axis has no coordinates. 
+              </text>
+           </message>
+           <message type="startsWith" level="error">
+              <key>**ERROR</key>
+              <text>
+                An error occurred in the service that was creating your product.
+              </text>
+           </message>
+           <message type="startsWith" level="error">
+              <key>**Error</key>
+              <text>
+                An error occurred in the service that was creating your product.
+              </text>
+           </message>
+           <message type="startsWith" level="error">
+              <key>**TMAP ERR</key>
+              <text>
+                An error occurred in the service that was creating your product.
+              </text>
+           </message>
+           <message type="startsWith" level="error">
+              <key>STOP</key>
+              <text>
+                An error occurred in the service that was creating your product.
+              </text>
+           </message>
+           <message type="startsWith" level="error">
+              <key>Segmentation</key>
+              <text>
+                An error occurred in the service that was creating your product.
+              </text>
+           </message>
+           <message type="startsWith" level="error">
+              <key>No such</key>
+              <text>
+                An error occurred in the service that was creating your product.
+              </text>
+           </message>
+           <message type="startsWith" level="error">
+              <key>**Internet data error</key>
+              <text>
+                A remote server was unable to deliver the data LAS needs to make your product.
+              </text>
+           </message>
+           <message type="startsWith" level="error">
+              <key>**netCDF error</key>
+              <text>
+                A remote server was unable to deliver the data LAS needs to make your product.
+              </text>
+           </message>
+           <message type="startsWith" level="error">
+              <key>**Internet Data error</key>
+              <text>
+                A remote server was unable to deliver the data LAS needs to make your product.
+              </text>
+           </message>
+    </messages>
+    <environment>
+        <variable>
+            <name>FER_DIR</name>
+             <value>.</value>
+             <value>/usr/local/pyferret-7.2.1-RHEL7-64</value>
+        </variable>
+        <variable>
+            <name>FER_DESCR</name>
+             <value>.</value>
+             <value>/usr/local/fer_data/descr</value>
+             <value>des</value>
+        </variable>
+        <variable>
+            <name>FER_DATA</name>
+             <value>.</value>
+             <value>./data</value>
+             <value>/usr/local/fer_data/data</value>
+             <value>/usr/local/pyferret-7.2.1-RHEL7-64/examples</value>
+             <value>/usr/local/pyferret-7.2.1-RHEL7-64/go</value>
+        </variable>
+        <variable>
+            <name>FER_GRIDS</name>
+             <value>.</value>
+             <value>/usr/local/fer_data/grids</value>
+        </variable>
+        <variable>
+            <name>FER_PALETTE</name>
+             <value>.</value>
+             <value>/usr/local/pyferret-7.2.1-RHEL7-64/ppl</value>
+             <value>jnls</value>
+             <value>jnls/insitu</value>
+             <value>jnls/section</value>
+             <value>scripts</value>
+        </variable>
+        <variable>
+            <name>FER_GO</name>
+             <value>.</value>
+             <value>/home/rhs/IdeaProjects/las/src/main/resources/ferret/scripts</value>
+             <value>/usr/local/pyferret-7.2.1-RHEL7-64/contrib</value>
+             <value>/usr/local/pyferret-7.2.1-RHEL7-64/examples</value>
+             <value>/usr/local/pyferret-7.2.1-RHEL7-64/go</value>
+             <value>jnls</value>
+             <value>jnls/insitu</value>
+             <value>jnls/section</value>
+             <value>scripts</value>
+        </variable>
+        <variable>
+            <name>FER_FONTS</name>
+             <value>/usr/local/pyferret-7.2.1-RHEL7-64/ppl/fonts</value>
+        </variable>
+        <variable>
+            <name>PLOTFONTS</name>
+             <value>/usr/local/pyferret-7.2.1-RHEL7-64/ppl/fonts</value>
+        </variable>
+        <variable>
+            <name>FER_EXTERNAL_FUNCTIONS</name>
+             <value>.</value>
+        </variable>
+        <variable>
+            <name>DODS_CONF</name>
+             <value>/home/rhs/tomcat/content/las/conf/server/dods/.dodsrc</value>
+        </variable>
+        <variable>
+            <name>LD_LIBRARY_PATH</name>
+             <value>/usr/local/pyferret-7.2.1-RHEL7-64/lib//usr/bin/python/site-packages/pyferret:/usr/lib64:/usr/local/pyferret-7.2.1-RHEL7-64/lib/python2.7/site-packages/pyferret:/usr/lib64:/usr/local/pyferret-7.2.1-RHEL7-64/lib/python2.7/site-packages/pyferret</value>
+        </variable>
+        <variable>
+            <name>PYTHONPATH</name>
+             <value>/usr/local/pyferret-7.2.1-RHEL7-64/lib//usr/bin/python/site-packages:/usr/local/pyferret-7.2.1-RHEL7-64/lib/python2.7/site-packages</value>
+        </variable>
+    </environment>
+</application>

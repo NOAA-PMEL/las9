@@ -1,0 +1,280 @@
+! LAS_xytvar_setup.jnl 
+! ACM 4/2019 version for DSG datasets
+! ... need a version similar to old version for gridded and other insitu...
+
+! Draw the underlying axes of a property-property plot,
+! formatted as a longitude, latitude or time axis.
+
+! variable p is the prop_var (independent axis) masked for any subset chosen and
+!  with XSEQUENCE applied to put it on an x axis
+!
+! variable q is the data_var (dependent axis) masked for any subset chosen and
+!  with XSEQUENCE applied to put it on an x axis
+
+! May turn off axis labeling later
+PPL TICS .6,.125,.6,.125
+PPL TICS .125,.2,.125,.2
+PPL axlabp,-1,-1
+
+
+DEFINE SYMBOL xvar = xvar
+DEFINE SYMBOL yvar = yvar
+LET p = ($xvar) 
+LET q = ($yvar)
+
+
+! Are the variables longitude and latitude (when the dataset is not of trajectory type)
+! If so then connect the dots and do not draw the regression line
+
+DEFINE SYMBOL propunits = none`($ferret_prop_var),return=units`
+DEFINE SYMBOL plotunits = none`($ferret_plot_var),return=units`
+
+LET itsa_lon_prop = ($ferret_prop_var"0|($dsg_x_var)>1|*>0")
+LET itsa_lat_prop = ($ferret_prop_var"0|($dsg_y_var)>1|*>0")
+LET itsa_tim_prop = ($ferret_prop_var"0|($dsg_t_var)>1|*>0")
+LET itsa_dep_prop = ($ferret_prop_var"0|($dsg_z_var%0%)>1|*>0")
+
+
+LET itsa_lon_plot = ($ferret_plot_var"0|($dsg_x_var)>1|*>0")
+LET itsa_lat_plot = ($ferret_plot_var"0|($dsg_y_var)>1|*>0")
+LET itsa_tim_plot = ($ferret_plot_var"0|($dsg_t_var)>1|*>0")
+LET itsa_dep_plot = ($ferret_plot_var"0|($dsg_z_var%0%)>1|*>0")
+
+LET itsa_map_plot = `itsa_lon_prop AND itsa_lat_plot` 
+
+CANCEL SYMBOL set_window_quals
+
+! If they are not lon, lat, or time, put axis labels on the plot.
+! (easier to understand, e.g. SST as a fcn of AIRT)
+
+IF ($variable_0_lab"0|*>1") THEN 
+   DEFINE SYMBOL ax_label_x @AC($variable_0_lab)
+   IF `itsa_tim_prop OR itsa_lon_prop OR itsa_lat_prop`  THEN CANCEL SYMBOL ax_label_x
+ENDIF
+
+IF ($variable_1_lab"0|*>1") THEN 
+   DEFINE SYMBOL ax_label_y @AC($variable_1_lab)
+   IF `itsa_lon_plot OR itsa_lat_plot` THEN  CANCEL SYMBOL ax_label_y
+ENDIF
+
+
+! If the axis labels are long, make the text size smaller
+LET labfac = 1.
+if `(labwid("($ax_label_x)", 0.12) / ($ppl$xlen)) GT 1` THEN LET labfac = ($ppl$xlen)/labwid("($ax_label_x)",0.12)
+if `(labwid("($ax_label_y)", 0.12) / ($ppl$ylen)) GT 1` THEN LET labfac = MIN(`labfac`,`($ppl$ylen)/labwid("($ax_label_y)",0.12)`)
+IF `labfac LT 1 AND labfac GT 0.06` THEN DEFINE SYMBOL ax_label_resize PPL LABSET,,`0.12*labfac`,`0.12*labfac`
+
+! Do not label map axes with the words LONGITUDE, LATITUDE
+IF `itsa_lon_prop OR itsa_lat_prop`  THEN CANCEL SYMBOL ax_label_x 
+IF `itsa_lon_plot OR itsa_lat_plot` THEN CANCEL SYMBOL ax_label_y
+
+
+! size for the label that says a variable is all-missing
+DEFINE SYMBOL miss_lab_siz = 0.14
+
+! For thumbnail plots
+DEFINE SYMBOL mainlab_size = 0.14
+DEFINE SYMBOL errlab_size = 0.16
+IF ($ferret_thumb"0|0|*>1") THEN  
+   DEFINE SYMBOL poly_size = 1.3
+   DEFINE SYMBOL is_thumb = 1
+   DEFINE SYMBOL mainlab_size = 0.22
+   DEFINE SYMBOL errlab_size = 0.2
+   DEFINE SYMBOL thumb_alab_size = PPL AXLSZE,.14,.14
+   DEFINE SYMBOL txl_lab_size = .14
+   PPL TXLSZE,($txl_lab_size)
+   LET labfac = 1.8
+   DEFINE SYMBOL ax_label_resize PPL LABSET,,`0.12*labfac`,`0.12*labfac`
+   DEFINE SYMBOL miss_lab_siz = 0.24
+
+   DEFINE SYMBOL do_rsquare = 0
+
+ENDIF
+
+DEFINE SYMBOL win_asp = /ASPECT=.8
+
+IF `itsa_tim_prop` THEN 
+   DEFINE SYMBOL win_asp = /ASPECT=0.75
+   SET DATA/feature=time/FMASK=subset_mask 1
+   DEFINE SYMBOL connect_dots = 1
+   DEFINE SYMBOL do_rsquare = 0
+ENDIF
+
+IF `itsa_lon_prop AND itsa_lat_plot` THEN DEFINE SYMBOL win_asp = /ASPECT=`($region_Y_range)/($region_X_range)`
+
+DEFINE SYMBOL set_window_quals = /SIZE=($ferret_size"0.5")($win_asp)
+
+DEFINE SYMBOL view1 = full_view
+DEFINE SYMBOL view2 = full_view2
+
+SET VIEW ($view1)
+
+! Depth on the vertical axis?  We'll want to make it increasing downwards.
+
+LET attnames = ($ferret_plot_var_nq_noregion%($ferret_plot_var)%).attnames
+
+IF `IS_ELEMENT_OF_STR_N(attnames, "positive")` THEN 
+   DEFINE SYMBOL posdirec = `($ferret_plot_var_nq_noregion%($ferret_plot_var)%).positive`
+   DEFINE SYMBOL reverse_vert = ($posdirec"0|DOWN>1|down>1|*>0")
+ENDIF
+
+! Look for a standard_name of depth, or one of the sea_floor_depth_below names:
+IF `IS_ELEMENT_OF_STR_N(attnames, "standard_name")` THEN 
+   DEFINE SYMBOL posdirec = `($ferret_plot_var_nq_noregion%($ferret_plot_var)%).standard_name`
+   DEFINE SYMBOL reverse_vert = ($posdirec"0|DEPTH>1|depth>1|*>0")
+   IF `STRINDEX("($posdirec)", "sea_floor_depth") GT 0` THEN DEFINE SYMBOL reverse_vert = 1
+ENDIF
+
+
+
+! If this symbol is set during this script, then
+! the script will make a blank plot and exit.
+
+CANCEL SYMBOL put_label
+
+let pq = p*q
+let pqmask = pq-pq
+let p_var = p + pqmask
+let q_var = q + pqmask
+
+! Define some variables used below
+LET pminmax = MINMAX(p)
+LET qminmax = MINMAX(q)
+
+! Check for all-bad data. pminmax and qminmax depend on both p and q.
+! If bad, figure out which variable is all-bad and set the label string. 
+! DSG data needs XSEQUENCE before doing NGD transform
+
+DEFINE SYMBOL isbad =  `pminmax[i=2] - pminmax[i=1] `
+IF ($isbad"0|bad>1|*>0")  THEN 
+
+   LET qtest = XSEQUENCE(q)
+   LET ptest = XSEQUENCE(p)
+   DEFINE SYMBOL qgood = `qtest[i=@ngd] GT 0`
+   DEFINE SYMBOL pgood = `ptest[i=@ngd] GT 0`
+
+
+   DEFINE SYMBOL bad_verb = is
+   IF `($pgood) EQ 0 AND ($qgood) NE 0` THEN DEFINE SYMBOL bad_title = ($ferret_title_0) 
+   IF `($pgood) NE 0 AND ($qgood) EQ 0` THEN DEFINE SYMBOL bad_title = ($ferret_title_1) 
+   IF `($pgood) EQ 0 AND ($qgood) EQ 0` THEN 
+      DEFINE SYMBOl bad_verb = are
+      DEFINE SYMBOL bad_title = ($ferret_title_0) and <nl>($ferret_title_1) 
+   ENDIF
+ENDIF
+
+IF ($bad_title"0|*>1") THEN
+   PLOT/VS/SYM=dot/SET {0,1}, {0,1}
+      ppl xlab ($ferret_title_1)
+      ppl ylab ($ferret_title_0)
+      ppl tics 0,0,0,0
+      ppl axatic 0,0
+      ppl axlint 0,0
+      sh sym lab*
+      go unlabel ($labnum_x)
+   PPL PLOT
+
+   IF ($ferret_thumb"0|0|*>1") THEN  
+      LET ylab_bad = `($ppl$ylen)-3*($miss_lab_siz)`
+      LABEL/NOUSER 0.2, `ylab_bad-3*($miss_lab_siz)`, -1, 0, ($miss_lab_siz), @AS($bad_title)<NL>($bad_verb) All-Missing
+      DEFINE SYMBOL no_novalid_lab = 1
+      CANCEL SYMBOL bad_title
+   ELSE
+      LET ylab_bad = `($ppl$ylen)-2*($miss_lab_siz)`
+      LABEL/NOUSER 0.2, `ylab_bad-3*($miss_lab_siz)`, -1, 0, ($miss_lab_siz), @AS($bad_title) ($bad_verb) All-Missing
+      DEFINE SYMBOL no_novalid_lab = 1
+      CANCEL SYMBOL bad_title
+   ENDIF
+   DEFINE SYMBOL ngood_data = -1   ! Dont do another label in LAS_results.
+   
+   EXIT/SCRIPT
+ENDIF
+
+IF `(($ax_label_x"0|*>1") + ($ax_label_y"0|*>1") GE 1) AND (($ferret_thumb"0|0|*>1") EQ 0)` THEN 
+   DEFINE VIEW/AXES/X=0.12:0.99/y=0.06:0.93 full_view
+   SET VIEW full_view
+ENDIF
+
+GO LAS_open_window
+IF ($ferret_thumb"0|0|*>1") THEN 
+   DEFINE VIEW/AXES/X=0.12:0.99/y=0.1:0.93 full_view 
+   SET VIEW full_view
+ENDIF
+
+
+! If its a lon/lat plot, make a map with the same resolution as it would be
+! done on a map, but with light gray.
+! Only if longitude is on the horizontal axis
+
+IF `itsa_map_plot` THEN
+
+   DEFINE SYMBOL do_rsquare = 0
+   IF ($feature_type"0|trajectory>1|*>0") THEN DEFINE SYMBOL connect_dots = 1
+   
+   CANCEL SYMBOL ferret_title_1  ! dont need a vertical axis label
+
+   IF ($dm_labels"0|*>1") THEN DEFINE SYMBOL special_label_y = ppl yfor (($dm_labels))
+   
+!   PLOT/VS/SET($qualifiers) p, q
+   
+!   GO LAS_is_range (($XAXIS_MIN)) (($XAXIS_MAX))
+
+   STAT/brief p
+   LET amin = ($stat_min"0|bad>0|*")
+   LET amax = ($stat_max"0|bad>0|*")
+   GO LAS_is_range `amin` `amax`
+
+   DEFINE SYMBOL region_x_lo = `ax_lo`
+   DEFINE SYMBOL region_x_hi = `ax_hi`
+   DEFINE SYMBOL region_x_range = `ABS(ax_hi-ax_lo)`
+
+   STAT/brief q
+   LET amin = ($stat_min"0|bad>0|*")
+   LET amax = ($stat_max"0|bad>0|*")
+
+   GO LAS_is_range `amin` `amax`
+
+   DEFINE SYMBOL region_y_lo = `ax_lo`
+   DEFINE SYMBOL region_y_hi = `ax_hi`
+   DEFINE SYMBOL region_x_range = `ABS(ax_hi-ax_lo)`
+
+   DEFINE SYMBOL base_x_region = x=($region_x_lo):($region_x_hi)
+   DEFINE SYMBOL base_y_region = y=($region_y_lo):($region_y_hi)
+
+   IF ($constr_x_min"0") THEN  DEFINE SYMBOL base_x_region = x=($constr_x_min):($constr_x_max)
+   IF ($constr_y_min"0") THEN  DEFINE SYMBOL base_y_region = y=($constr_y_min):($constr_y_max)
+
+   go basemap ($base_x_region) ($base_y_region) " " white
+
+   DEFINE SYMBOL land_palette = gray_light
+   GO LAS_fland ($land_palette)
+   SET DATA 1
+   DEFINE SYMBOL lon_units = degrees_east
+
+   DEFINE SYMBOL qualifiers = ($qualifiers)/OVER
+
+ELSE
+
+   STAT/brief p
+   LET amin = ($stat_min"0|bad>0|*")
+   LET amax = ($stat_max"0|bad>0|*")
+   GO LAS_is_range `amin` `amax`
+
+   GO LAS_is_range `amin[e=@min]` `amax[e=@max]`
+   DEFINE SYMBOL hlim = /HLIM=`ax_lo`:`ax_hi`
+   
+   STAT/brief q
+   LET amin = ($stat_min"0|bad>0|*")
+   LET amax = ($stat_max"0|bad>0|*")
+   GO LAS_is_range `amin` `amax`
+
+   DEFINE SYMBOL vlim = /VLIM=`ax_lo`:`ax_hi`
+
+ENDIF
+
+DEFINE SYMBOL xvar = xvar
+DEFINE SYMBOL yvar = yvar
+LET p = ($xvar) 
+LET q = ($yvar)
+
+! End of file ------------LAS_xytvar_setup.jnl--------------------------

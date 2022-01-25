@@ -1,0 +1,62 @@
+! LAS_var_lon_lat_z_time.jnl
+! 10/2017
+!
+! Check attributes to determine if the variable is a longiutde,
+! latitude, depth/height or formatted time.
+! Argument is a variable name
+! Defines symbols var_is_lon, var_is_lat, var_is_dep, var_is_ht, var_is_time with values of 0 or 1.
+
+cancel symbol var_is_lon, var_is_lat, var_is_time, var_is_dep, var_is_ht
+
+DEFINE SYMBOL invarname = ($1)
+LET invarname = ($1)
+
+DEFINE SYMBOL var_is_lon = ($invarname"0|longitude>1|*>0)
+IF `($var_is_lon) EQ 0` THEN
+   LET attnames = ($invarname).attnames
+   IF `IS_ELEMENT_OF_STR_N (attnames, "units") GT 0` THEN
+      LET att_str = ($invarname).units
+      IF `STRINDEX( UPCASE(att_str), "DEG") GT 0` THEN \
+        DEFINE SYMBOL var_is_lon = `STRINDEX( UPCASE(att_str), "_E") GT 0` 
+   ENDIF
+ENDIF
+
+DEFINE SYMBOL var_is_lat = ($invarname"0|latitude>1|*>0)
+IF `($var_is_lat) EQ 0` THEN
+   LET attnames = ($invarname).attnames
+   IF `IS_ELEMENT_OF_STR_N (attnames, "units") GT 0` THEN
+      LET att_str = ($invarname).units
+      IF `STRINDEX( UPCASE(att_str), "DEG") GT 0` THEN \
+        DEFINE SYMBOL var_is_lat = `STRINDEX( UPCASE(att_str), "_N") GT 0` 
+   ENDIF
+ENDIF
+
+DEFINE SYMBOL var_is_dep = ($invarname"0|depth>1|*>0)
+IF `($var_is_dep) EQ 0` THEN
+   LET attnames = ($invarname).attnames
+   IF `IS_ELEMENT_OF_STR_N(attnames, "axis") GT 0` THEN
+      LET att_str = ($invarname).axis
+      DEFINE SYMBOL var_is_dep = `STRINDEX( UPCASE(att_str), "Z") GT 0`
+   ENDIF
+ENDIF
+
+! Depth or height?
+IF `($var_is_dep"0|1|*>0")` THEN
+   IF `IS_ELEMENT_OF_STR_N(attnames, "positive") GT 0` THEN
+      LET att_str = ($invarname).positive
+      DEFINE SYMBOL var_is_dep = `STRINDEX( UPCASE(att_str), "DOWN") GT 0`
+      DEFINE SYMBOL var_is_ht = `STRINDEX( UPCASE(att_str), "UP") GT 0`
+   ENDIF
+ENDIF
+
+
+DEFINE SYMBOL var_is_time = ($invarname"0|time>1|*>0)
+IF `($var_is_time) EQ 0` THEN
+   LET attnames = ($invarname).attnames
+   IF `IS_ELEMENT_OF_STR_N(attnames, "units") GT 0 AND IS_ELEMENT_OF_STR_N(attnames, "time_origin") GT 0` THEN
+      LET att_str = ($invarname).units
+      DEFINE SYMBOL var_is_time = `STRINDEX( UPCASE(att_str), "SINCE") GT 0`
+   ENDIF
+ENDIF
+
+! End of file ------------LAS_var_lon_lat_z_time.jnl--------------------------

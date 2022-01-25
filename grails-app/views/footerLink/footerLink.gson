@@ -1,0 +1,7 @@
+import pmel.sdig.las.FooterLink
+
+model {
+    FooterLink footerLink
+}
+
+json g.render(footerLink)

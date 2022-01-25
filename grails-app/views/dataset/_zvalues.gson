@@ -1,0 +1,5 @@
+import pmel.sdig.las.Zvalue
+model {
+    List<Zvalue> zvalues
+}
+json tmpl.zvalue(zvalues)

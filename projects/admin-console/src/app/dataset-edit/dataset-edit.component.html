@@ -1,0 +1,97 @@
+<app-dataset-picker [header]="header" [subHeader]="sub_header" [edit]="edit"></app-dataset-picker>
+<p-dialog [style]="{width: '80%'}" [(visible)]="editing_dataset" header="{{title}}" (onHide)="close()">
+  <app-json-form [properties]="properties" [jsonForm]="jsonForm"></app-json-form>
+  <div *ngIf="hasV">
+  <div *ngIf="variables">
+    <h4>Automatically add vectors to this data set.</h4>
+    <p class="bot_pad">This will attempt to find variables that are vector components by looking at the variable names. It will match, u,v variables like uwnd and vwnd. Any created vectors will appear in the list below.</p>
+    <button pButton class="ui-button-primary" (click)="addVectors()" label="Add Vectors"></button>
+    <div class="bot_pad"></div>
+  </div>
+  <p-card *ngIf="variables" header="{{variables_title}}">
+    <p-scrollPanel [style]="{width: '100%', height: '200px'}">
+      <div *ngFor="let vector of vectors">
+        <div *ngIf="edit">
+          <div class="ui-g" style="padding: 0px">
+            <div class="ui-g-10" style="padding: 0px">
+              <button pButton class="wide-button ui-button-secondary" label="{{vector.title}}"></button>
+            </div>
+            <div class="ui-g-1" style="padding: 0px">
+              <!-- Empty space to the buttons line up. -->
+            </div>
+            <div class="ui-g-1" style="padding: 0px">
+              <button label="Delete" pButton class="wide-button ui-button-danger" type="button" icon="pi pi-trash" iconPos="left" (click)="deleteVector(vector)"></button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div *ngFor="let variable of variables">
+        <div *ngIf="edit">
+          <div class="ui-g" style="padding: 0px">
+            <div class="ui-g-10" style="padding: 0px">
+              <button pButton class="wide-button ui-button-secondary" label="{{variable.title}}" (click)="editVariable(variable)"></button>
+            </div>
+            <div class="ui-g-1" style="padding: 0px">
+              <button label="Edit" pButton class="wide-button ui-button-warning" type="button" icon="pi pi-pencil" iconPos="left" (click)="editVariable(variable)"></button>
+            </div>
+            <div class="ui-g-1" style="padding: 0px">
+              <button label="Delete" pButton class="wide-button ui-button-danger" type="button" icon="pi pi-trash" iconPos="left" (click)="deleteVariable(variable)"></button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </p-scrollPanel>
+  </p-card>
+  </div>
+  <button pButton class="ui-button-primary" (click)="save()" label="Save"></button>
+</p-dialog>
+<p-dialog [style]="{width: '80%'}" [(visible)]="editing_variable" header="{{variable_title}}">
+  <app-json-form [properties]="variable_properties" [jsonForm]="variableForm"></app-json-form>
+  <div *ngIf="hasX || hasY || hasZ || hasT">
+    <p-card header="{{axes_title}}">
+      <div class="ui-g" style="padding: 0px">
+        <div *ngIf="hasX" class="ui-g-10" style="padding: 0px">
+          <button pButton class="wide-button ui-button-secondary" label="X Axis"></button>
+        </div>
+        <div  *ngIf="hasX" class="ui-g-2" style="padding: 0px">
+          <button label="Edit" pButton class="ui-button-danger" type="button" icon="pi pi-pencil" iconPos="left" (click)="editX()"></button>
+        </div>
+        <div *ngIf="hasY" class="ui-g-10" style="padding: 0px">
+          <button pButton class="wide-button ui-button-secondary" label="Y Axis"></button>
+        </div>
+        <div *ngIf="hasY" class="ui-g-2" style="padding: 0px">
+          <button label="Edit" pButton class="ui-button-danger" type="button" icon="pi pi-pencil" iconPos="left" (click)="editY()"></button>
+        </div>
+        <div *ngIf="hasZ" class="ui-g-10" style="padding: 0px">
+          <button pButton class="wide-button ui-button-secondary" label="Z Axis"></button>
+        </div>
+        <div *ngIf="hasZ" class="ui-g-2" style="padding: 0px">
+          <button label="Edit" pButton class="ui-button-danger" type="button" icon="pi pi-pencil" iconPos="left" (click)="editZ()"></button>
+        </div>
+        <div *ngIf="hasT" class="ui-g-10" style="padding: 0px">
+          <button pButton class="wide-button ui-button-secondary" label="T Axis"></button>
+        </div>
+        <div *ngIf="hasT" class="ui-g-2" style="padding: 0px">
+          <button label="Edit" pButton class="ui-button-danger" type="button" icon="pi pi-pencil" iconPos="left" (click)="editT()"></button>
+        </div>
+      </div>
+    </p-card>
+  </div>
+  <button pButton class="ui-button-primary" (click)="done_variable()" label="Done"></button>
+</p-dialog>
+<p-dialog [style]="{width: '80%'}" [(visible)]="editing_geoAxisX" header="Editing X-Axis">
+  <app-json-form [properties]="geoAxisX_properties" [jsonForm]="geoAxisXForm"></app-json-form>
+  <button pButton class="ui-button-primary" (click)="doneX()" label="Done"></button>
+</p-dialog>
+<p-dialog [style]="{width: '80%'}" [(visible)]="editing_geoAxisY" header="Editing Y-Axis">
+  <app-json-form [properties]="geoAxisY_properties" [jsonForm]="geoAxisYForm"></app-json-form>
+  <button pButton class="ui-button-primary" (click)="doneY()" label="Done"></button>
+</p-dialog>
+<p-dialog [style]="{width: '80%'}" [(visible)]="editing_verticalAxis" header="Editing Z-Axis">
+  <app-json-form [properties]="vertical_axis_properties" [jsonForm]="verticalForm"></app-json-form>
+  <button pButton class="ui-button-primary" (click)="doneZ()" label="Done"></button>
+</p-dialog>
+<p-dialog [style]="{width: '80%'}" [(visible)]="editing_timeAxis" header="Editing T-Axis">
+  <app-json-form [properties]="time_axis_properties" [jsonForm]="timeForm"></app-json-form>
+  <button pButton class="ui-button-primary" (click)="doneT()" label="Done"></button>
+</p-dialog>

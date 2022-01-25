@@ -1,0 +1,70 @@
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! list_prop_prop.jnl
+! 
+! Author: ansley
+! Date: 08-2013
+
+! lists prop_prop_plot.jnl creates an ascii listing of the data from a 
+! property-property plot, using the data variable in symbol ferret_plot_var_0,
+! the second variable from ferret_plot_var_1 and optionally colored by ferret_plot_var_2.
+! If there is a ferret_plot_var_3 list that as well (e.g. two qc flags)
+!
+! If the variables are strings, use SAMPLEI to apply any masks.
+! Use the original variable name when expanding a feature_variable to list.
+
+! 12/2016 set list precision to 7
+!  9/2017 If there is a fourth variable, list it too.
+! 10/2017 Ensure that Time, Longitude, Latitude, Depth are written if available.
+! 10/2017 List up to the total number of variables in the dataset data_0_var through data_xx_var.
+
+set mode verify:always
+
+DEFINE SYMBOL frmt width=1024
+
+IF ($ferret_data_format"0|csv>1|tsv>1|asc>1|*>0") THEN 
+   DEFINE SYMBOL frmt = ($frmt)/($ferret_data_format"|tsv>format=tab|csv>format=comma|asc>heading=enhanced")
+ENDIF
+
+SET LIST/FILE="($result_ferret_listing_filename)"
+SET LIST/PREC=7
+
+DEFINE SYMBOL its_listing = 1
+
+! How many variables to list?
+SET DATA ($data_0_url)
+LET nvars = ..nvars
+REPEAT/i=2:`nvars` (\
+  DEFINE SYMBOL ii = `i`;\
+  IF ($data_($ii)_var"0|*>1") THEN DEFINE SYMBOL data_count = `($ii)+1` ELSE EXIT/LOOP )
+
+CANCEL DATA `($data_0_var),RETURN=dsetnum`
+
+
+GO setup_prop_prop
+
+IF `($dsgshape"0|*>1") EQ 0` THEN
+   MESSAGE/ERROR **ERROR Expecting Discrete Sampling Geometries data
+   EXIT/PROGRAM
+ENDIF
+
+! Set up the list of variables to plot.
+
+IF ($feature_variable"0|*>1") THEN DEFINE SYMBOL list_vars = ($feature_variable),
+
+! If one of the variables is the feature-id or a coordinate variable, skip it.  They will already be listed.
+DEFINE SYMBOL icount = 0
+REPEAT/RANGE=1:($data_count) (\
+   IF ($ferret_plot_var_($icount)%|($feature_variable"A_not_any_var")>1|*>0%) THEN CYCLE ;\ 
+   IF ($ferret_plot_var_($icount)%|($dsg_x_var"A_not_any_var")>1|*>0%) THEN CYCLE ;\ 
+   IF ($ferret_plot_var_($icount)%|($dsg_y_var"A_not_any_var")>1|*>0%) THEN CYCLE ;\ 
+   IF ($ferret_plot_var_($icount)%|($dsg_z_var"A_not_any_var")>1|*>0%) THEN CYCLE ;\ 
+   IF ($ferret_plot_var_($icount)%|($dsg_t_var"A_not_any_var")>1|*>0%) THEN CYCLE ;\ 
+   DEFINE SYMBOL list_vars = ($list_vars) ($ferret_plot_var_($icount)) ;\
+   IF `($icount) LT ($data_count)-1` THEN DEFINE SYMBOL list_vars = ($list_vars), ;\
+   DEFINE SYMBOL  icount = `($icount)+1`;\
+   )
+
+LIST/CLOBBER/($frmt)/PREC=7/FILE="($result_ferret_listing_filename)" ($list_vars)
+
+
+! ----- End of list_prop_prop.jnl ------------------------------------------------

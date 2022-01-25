@@ -1,0 +1,42 @@
+
+
+IF `($feature_variable"0|*>1") EQ 0` THEN EXIT/SCRIPT
+
+LET feature_name = ($feature_variable)
+
+! If the feature variable is a regular variable not a coordinate,
+! make a string version of it.
+
+IF `STRINDEX("($feature_variable)", "(") EQ 0` THEN 
+
+! are the feature-id's numeric"?  and not just 1,2,3...? 
+! If so make them become the id string.
+
+   DEFINE SYMBOL vtype = `($feature_variable),RETURN=dtype`
+
+   IF `($vtype"0|CHAR>1|*>0") EQ 0` THEN
+      LET idlen = `($feature_variable)[m=@max]`
+      LET nlen = INT( 1+LOG(idlen) )
+      LET/d=($dsetnum"1") feature_name = FLOATSTR(($feature_variable), "(i`nlen`)")
+   ENDIF
+
+! Is the feature-variable a coordinate variable?  If it's numeric
+! define the feature_name to be the values. 
+
+ELSE 
+
+   LET cnames = ..coordnames
+   DEF SYM dname = `cnames[i=($q)]`
+   
+   let ee_var = _e[ge=($dname)] 
+   LET nlen = INT(1+LOG(ee_var[m=@max]))
+   LET/d=($dsetnum"1") feature_name = FLOATSTR(ee_var, "(i`nlen`)") 
+
+! Previously concocted id's based on the location/ time.  With DSG datasets
+! lets not do this. Use feature-ID variable whatever it is.
+
+ENDIF
+
+DEFINE SYMBOL feature_name = feature_name
+
+!---------------- end of dsg_feature_name.jnl -------------------------

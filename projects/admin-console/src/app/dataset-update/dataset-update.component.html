@@ -1,0 +1,26 @@
+<app-dataset-picker [header]="header" [subHeader]="subHeader" [update]="true"></app-dataset-picker>
+<p-dialog [style]="{width: '80%'}" [(visible)]="edit_dataset_update" header="{{dataset_title}}" (onHide)="close()">
+  <h3>Update Specification</h3>
+  <div class="p-field">
+    <input placeholder="cron format" id="update" aria-describedby="update-help" class="p-inputtext-lg" [(ngModel)]="cron_spec" pInputText />
+    <p></p>
+    <h4 id="update-help">Use an expression in cron format to specify how often this data set gets updated.</h4>
+    <p class="eightp">Expression should be made up of 6 parts.</p>
+    <ol>
+      <li>Seconds (List of numbers 0-59. 0,30 updates every 30 seconds. Don't do this, use 0 and forget about it)</li>
+      <li>Minutes ("*" or a list of minutes 0-59. 0,15,30,45 updates every 15 minutes starting on the hour.)</li>
+      <li>Hours ("*" or a list of hours of the day 0-23. 0,12 updates at midnight and noon.) </li>
+      <li>Day-of-Month ("?", "*" or a list of days of the month. 5,15 updates on the fifth and the fifteenth of the month. Careful of numbers >28.)</li>
+      <li>Month ("*" or a list of months 1-12. Useful with day-of-month for things like quarterly updates.)</li>
+      <li>Day-of-Week ("*", "?" or a list of days of the week 1-7. Only one ? value per spec, either day-of-month or day-of-week. 1=Sunday.</li>
+    </ol>
+    <p class="eightp">In the above "?" means don't care and "*" means every possible. You can only have ONE "?".</p>
+    <p class="eightp"><strong>0 0,30 * * * ?</strong> updates every half hour.</p>
+    <p class="eightp"><strong>0 15 0,12 * * ?</strong> updates every day at 15 past midnight and 15 past noon.</p>
+    <p class="eightp"><strong>0 0 12 ? * 3</strong> updates every Tuesday at noon.</p>
+    <p class="eightp"><strong>0 45 13 5 * ?</strong> updates at 1:45 pm on the fifth of every month.</p>
+    <h4>To cancel an existing update just use a BLANK entry.</h4>
+    <p class="eightp">You can read more about <a target="_blank" href="http://www.quartz-scheduler.org/documentation/quartz-2.2.2/tutorials/tutorial-lesson-06.html">cron expressions in the Quartz documentation.</a></p>
+  </div>
+  <button pButton class="ui-button-primary" (click)="save()" label="Save"></button>
+</p-dialog>

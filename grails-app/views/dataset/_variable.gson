@@ -1,0 +1,8 @@
+import pmel.sdig.las.Variable
+model {
+    Variable variable
+}
+json g.render(variable, [excludes: ["dataset","geoAxisX", "geoAxisY", "verticalAxis", "timeAxis", "variableAttributes", "variableProperties"]]) {
+    variableAttributes g.render(variable.variableAttributes)
+    variableProperties g.render(variable.variableProperties)
+}

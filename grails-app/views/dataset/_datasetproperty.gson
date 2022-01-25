@@ -1,0 +1,5 @@
+import pmel.sdig.las.DatasetProperty
+model {
+    DatasetProperty datasetProperty
+}
+json g.render(datasetProperty, [excludes: ["dataset"]])

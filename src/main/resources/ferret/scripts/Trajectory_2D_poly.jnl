@@ -1,0 +1,301 @@
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! $Header$
+! Trajectory_2D_poly.jnl
+!
+! Creates a 2D plot with a blank 'basemap' and an overlay of points
+! colored by the ($ferret_plot_var) defined in LAS_initialize_data_insitu.
+!
+! 1/2010 acm - For Cruise ID, thin out the icons which are too dense to see well.
+!              leave a thin dotted line at the original density
+!              add to the title, "from data sampled every xxx"
+! 12/2013 ACM  Always draw with ribbon plot style
+
+IF `($ferret_memory"25.6") LT 200` THEN SET MEM/SIZ=200
+
+DEFINE SYMBOL start_clock_seconds = ($clock_secs)
+
+
+! Set the gif filename, changing it from .gif to the name from this request
+! Set up to write info to the debug log so that FshowGO can be used
+GO LAS_initial_setup
+
+! Initialize the region and data.
+
+DEFINE SYMBOL data_initialization_script = feature_initialize_data_insitu
+
+SET MODE verify:always  ! allows for debugging
+
+DEFINE SYMBOL its_trajectory_map = 1
+GO LAS_initialize_region 0
+
+DEFINE SYMBOL data_name_in = ($data_0_var)
+
+GO LAS_initialize_data 0
+
+! Check for errors (They often occur during dataset initialization.)
+
+IF ($error_status"0|*>1") THEN
+  MESSAGE/ERROR **ERROR ($error_string)
+  EXIT/PROGRAM
+ENDIF
+
+! Set the URL label for the first dataset.
+GO LAS_url_label 0
+
+IF `STRINDEX("($ferret_view"0")", "x") EQ 0` THEN
+
+  MESSAGE/ERROR **ERROR Expecting a view in xy or xyt
+  EXIT/PROGRAM
+ENDIF
+
+DEFINE SYMBOL stat_min ($region_x_lo)
+LET var_data = ($data_var)
+
+DEFINE SYMBOL var_data = ($data_var)[i=1,m=1]
+DEFINE SYMBOL vtype = 0
+LET gettype= ($var_data)
+DEFINE SYMBOL vtype = `gettype,RETURN=dtype`
+DEFINE SYMBOL is_string = ($vtype"0|CHAR>1|*>0")
+
+! For the annotations
+IF ($is_string"0|*>1") THEN 
+   sh sym data*var  ! ngood is number of x,y locations?
+   stat ($data_x_var)
+   IF `($ngood_data"-10|*>1") LT 0` THEN DEFINE SYMBOL ngood_data = ($stat_ngood)
+   IF `($nbad_data"-10|*>1") LT 0` THEN DEFINE SYMBOL nbad_data = ($stat_nbad)
+   LET datmin = 1
+   LET datmax = ($nfeatures)
+ELSE
+   stat ($data_var)
+   IF `($ngood_data"-10|*>1") LT 0` THEN DEFINE SYMBOL ngood_data = ($stat_ngood)
+   IF `($nbad_data"-10|*>1") LT 0` THEN DEFINE SYMBOL nbad_data = ($stat_nbad)
+   LET datmin = ($stat_min)
+   LET datmax = ($stat_max)
+ENDIF
+
+! Special color-by-time key
+IF ($ferret_plot_key"0|date_key>1|*>0") THEN 
+
+! In this case we set up a time axis, and label the color key with dates
+! If the units are seconds since, we don't need that much resolution for this. Make it hours.
+
+   DEFINE SYMBOL datekey = 1
+   DEFINE SYMBOL ferret_key_annotate = 0
+
+   IF `($ferret_plot_levels"0|*>1") EQ 0` THEN DEFINE SYMBOL ferret_plot_levels = 50
+   IF `($ferret_fill_levels"0|*>1") EQ 0` THEN DEFINE SYMBOL ferret_fill_levels = ($ferret_plot_levels)
+
+   GO define_dsg_taxis
+
+ENDIF
+
+IF `($ferret_by_id"0|*>1") OR color_by_feature EQ 1` THEN
+   DEFINE SYMBOL var_data = ($feature_variable)
+   LET var_data = ($feature_variable)
+   DEFINE SYMBOL ferret_plot_title Colored by Trajectory Number
+   CANCEL SYMBOL ferret_fill_levels
+   IF ($is_string"0") THEN DEFINE SYMBOL ferret_fill_levels = (1,($nfeatures),1)
+   IF `($ferret_palette"0|*>1") EQ 0` THEN DEFINE SYMBOL ferret_palette = ten_by_levels
+   DEFINE SYMBOL qualifiers = ($qualifiers)/KEY=center
+
+   DEFINE SYMBOL ferret_key_annotate = 0
+ENDIF
+
+! Color key for the variable values.
+! If there is no plot variable defined (only plotting locations),
+! do not plot the key.
+
+IF ($ferret_plot_key"1|0|*>1") THEN
+  IF `($ferret_plot_key"0|0|1>0|*>1") EQ 0` THEN DEFINE SYMBOL ferret_plot_key = ($ferret_plot_var"0|*>1")
+ENDIF
+
+! Plot qualifiers (graticule lines etc)
+GO LAS_set_plot_qualifiers
+IF `STRINDEX("($qualifiers)", "KEY") EQ 0 AND ($ferret_plot_key"0|*>1")` THEN DEFINE SYMBOL qualifiers = ($qualifiers)/KEY 
+
+! Open the window
+GO LAS_open_window
+
+SAY _________________ Before land underlay clock seconds:                        ($clock_secs)
+
+LET pre_plot = ($clock_secs)
+
+! Create the blank plot with bathymetries,
+! coastlines, EEZ's, etc.
+! Make the gray ocean lighter. To make it lighter still,
+! start the colors with -40000. A lighter map needs darker graticule lines.
+
+! In trajectory_ui.xml is an option "Bathymetry style".  Choose a white
+! background or the default grayscale bathymetry.
+
+DEFINE SYMBOL basemap_palette = grayscale
+
+DEFINE SYMBOL basemap_levels = (-inf)(-20000,-1000,500)(-1000,0,100)
+
+IF ($ferret_bathymetry_style"1|grayscale>1|*>0") THEN 
+   PPL COLOR,7,55,55,55     ! gray
+ENDIF
+
+IF ($ferret_bathymetry_style"0|white>1|*>0") THEN DEFINE SYMBOL basemap_palette = white
+IF ($ferret_bathymetry_style"0|blue>1|*>0") THEN 
+   DEFINE SYMBOL basemap_palette = osmc_bluescale
+   DEFINE SYMBOL basemap_levels = (-20000)(-10000,0,10000)
+ENDIF
+
+GO LAS_XY_overlay_basemap
+
+PPL SHASET PROTECT
+
+! Note LAS_fland.jnl determines the resoultion from the region symbols.
+!  GO LAS_fland black
+!  GO LAS_fland navy
+!  GO LAS_fland brown_dark
+!  GO LAS_fland green_pine
+
+GO LAS_fland ($ferret_land_palette"gray_dark")
+
+PPL SHASET PROTECT
+SAY _________________ After land underlay clock seconds:                         ($clock_secs)
+SAY _________________ total time for land underlay, seconds                                 ----- `($clock_secs) - pre_plot`
+
+! Turn on annotate_key, which persists until turned off
+! (unless key_annoatate property tells us otherwise).
+
+IF ($ferret_key_annotate"1|0|1|*>1") THEN
+   KEYMARK 1
+ELSE
+   KEYMARK 0
+ENDIF
+
+! Define plot qualifiers for trajectory overlay
+
+DEFINE SYMBOL qualifiers = ($qualifiers)/OVER/NOLAB
+
+! Get info for deciding on line thickness
+GO feature_labels
+
+IF `($drawthick"0|*>1") EQ 0` THEN 
+   DEFINE SYMBOL drawthick = 1
+   DEFINE SYMBOL drawthick = 2
+
+   IF ($decimation_fraction"0|*>1") THEN 
+      DEFINE SYMBOL  drawthick = 2
+   ELSE
+      IF `nfeatures LT 20` THEN DEFINE SYMBOL drawthick = 3
+   ENDIF
+
+!    If there's not a lot of data on the map and the region is pretty small, 
+!   IF `nfeatures LT 20 AND (($basemap_area"0") LT 0.2)` THEN DEFINE SYMBOL drawthick = 3
+
+! Try this first, few cruises --> thick
+   IF `nfeatures LT 20` THEN DEFINE SYMBOL drawthick = 3
+ENDIF
+
+IF `($drawthick"0|1|2|3|*>0") GT 1` THEN DEFINE SYMBOL qualifiers = ($qualifiers)/THICK=($drawthick)
+
+
+! Is this a single mooring where all the location data is at a single location?  If so make a colored symbol
+
+LET lonattnames = ($dsg_x_var).attnames
+LET latattnames = ($dsg_y_var).attnames
+IF `IS_ELEMENT_OF_STR(lonattnames, "actual_range") GT 0 AND \
+ IS_ELEMENT_OF_STR(lonattnames, "actual_range") GT 0` THEN
+
+   LET lvar = ($dsg_x_var).actual_range
+   LET lonmin `lvar[i=@min],PREC=9`
+   LET lonmax `lvar[i=@max],PREC=9`
+
+   LET lvar = ($dsg_y_var).actual_range
+   LET latmax `lvar[i=@max],PREC=9`
+   LET latmin `lvar[i=@min],PREC=9`
+
+   IF `lonmax-lonmin LT 0.1 AND latmax-latmin LT 0.1` THEN 
+      DEFINE SYMBOL qualifiers = ($qualifiers)/SYM=21/SIZ=0.1
+      DEFINE SYMBOL is_mooring = 1
+   ENDIF
+ENDIF
+
+IF ($single_color"0|*>1") THEN
+   DEFINE SYMBOL plot_command = PLOT/VS/LINE/color=5
+ENDIF
+
+! When there are just a few points (missing or valid), draw a colored symbol as well as the ribbon line.
+!IF `($numobs) LE 30` THEN DEFINE SYMBOL qualifiers = ($qualifiers)/SYM=17
+
+! Points will mark location of missing data if needed
+! Use color=1 for black...
+LET missing_flag = -9999999
+LET/UNITS=degrees_east  x_loc_bad = IF MISSING(var_data,missing_flag) EQ missing_flag THEN x_var_data 
+LET/UNITS=degrees_north y_loc_bad = IF MISSING(var_data,missing_flag) EQ missing_flag THEN y_var_data 
+
+! Set the palette
+! If there is no variable, only locations, and if a palette is not 
+! defined by ferret_palette, use black.
+
+IF ($ferret_plot_var"0|*>1") THEN
+   DEFINE SYMBOL qualifiers = ($qualifiers)/PALETTE=($ferret_palette"default|*>*")
+ELSE
+   DEFINE SYMBOL qualifiers = ($qualifiers)/PALETTE=($ferret_palette"black|default>black|*>*")/NOKEY
+ENDIF
+
+SAY _________________ Start line plot: clock seconds:                            ($clock_secs)
+LET pre_plot = ($clock_secs)
+
+! Draw the ribbon plot
+
+IF ($single_color"0|*>1") THEN
+    PLOT($qualifiers) 1+0* ($ferret_plot_var)
+ELSE
+! or /missing=blank or leave off for gray...
+
+   PLOT($qualifiers)/MISSING=blank/SET ($ferret_plot_var)
+   GO key_at_top
+   PPL RIBBON/OVER
+ENDIF
+
+
+! Hack: histogram levels
+ IF `STRINDEX("($ferret_fill_levels)", "H") GT 0 OR STRINDEX("($ferret_fill_levels)", "h") GT 0` THEN \
+PLOT($qualifiers)/missing=blank/nokey  var_data
+
+SAY _________________ END line plot: clock seconds:                              ($clock_secs)
+SAY _________________ total time for line plot, seconds                                     ----- `($clock_secs) - pre_plot`
+
+! For the results script,
+IF ($ferret_plot_var"0|*>1") THEN
+   DEFINE SYMBOL data_plotted_min = `datmin,prec=7`
+   DEFINE SYMBOL data_plotted_max = `datmax,prec=7`
+ENDIF
+
+! Add labels at the top for the dataset name etc if they exist  
+
+GO labels_above_plot
+
+! Draw extra points, e.g. moorings as dots. Do this last so these 
+! marks will be on top of everything else.
+
+IF ($custom_dataset"0|*>1") THEN 
+    IF `($ferret_is_($custom_dataset)"0|*>1") AND ($custom_post_trajectory"0|*>1")` THEN \
+     GO ($custom_post_trajectory)
+ENDIF
+
+
+! Save the results
+
+GO LAS_results box
+
+! End of file ------------Trajectory_2D_poly.jnl--------------------------
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+SAY _________________ exiting Trajectory_2D_poly.jnl product script: 
+
+SAY _________________ Product script total execution time, seconds:                         ----- `($clock_secs) - ($start_clock_seconds)`
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+! NOTE Can get just the timing info from a log of this product with
+! grep seconds log.out | grep -v "SAY " | grep -v MESSAGE | grep -v independent 
+!
+! Or just the totals for decimating, plotting and the whole script with 
+! grep seconds log.out | grep -v "SAY " | grep -v MESSAGE | grep -v independent | grep total 

@@ -1,0 +1,11 @@
+.datasetwrap {
+  overflow-wrap: break-word;
+}
+.output {
+    z-index: -1 !important;
+    position: absolute !important;
+    top: 120px !important;
+}
+.smaller {
+    font-size: .6em;
+}

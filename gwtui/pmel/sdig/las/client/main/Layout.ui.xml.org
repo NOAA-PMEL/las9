@@ -1,0 +1,70 @@
+<!DOCTYPE ui:UiBinder SYSTEM "http://dl.google.com/gwt/DTD/xhtml.ent">
+<ui:UiBinder xmlns:ui="urn:ui:com.google.gwt.uibinder"
+             xmlns:g='urn:import:com.google.gwt.user.client.ui'
+             xmlns:las="urn:import:pmel.sdig.las.client.widget"
+             >
+    <g:HTMLPanel>
+        <!-- Add HTML content here. The ui:field attribute binds an element to
+            a field in the owner class. See the GWT docs on UI Binder for more details. -->
+
+        <nav ui:field="header" class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+            <div class="container-fluid">
+                <div class="navbar-header">
+                    <button type="button" class="navbar-toggle collapsed"
+                            data-toggle="collapse" data-target="#navbar" aria-expanded="false"
+                            aria-controls="navbar">
+                        <span class="sr-only">Toggle navigation</span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+
+                    <las:Breadcrumb ui:field="home" title="Home" styleName="left right top navbar-header btn btn-default">
+                        <span class="glyphicon glyphicon-home" aria-hidden="true"></span>
+                        Home
+                    </las:Breadcrumb>
+
+                    <a class="navbar-brand" href="#"><g:HTML ui:field="lasTitle">LAS</g:HTML></a>
+                </div>
+                <div id="navbar" class="navbar-collapse collapse">
+                    <ul class="nav navbar-nav navbar-right">
+                        <li>
+                            <a href="#">Help</a>
+                        </li>
+                    </ul>
+                    <g:FormPanel ui:field="searchForm" styleName="navbar-form navbar-right">
+                        <g:HTMLPanel styleName="input-group">
+                            <g:TextBox ui:field="search" styleName="form-control"></g:TextBox>
+                            <span class="input-group-btn">
+                                <g:Button ui:field="searchButton" styleName="btn btn-default">
+                                    <span class="glyphicon glyphicon-search" aria-hidden="true"/>
+                                </g:Button>
+                            </span>
+                        </g:HTMLPanel>
+                    </g:FormPanel>
+                </div>
+
+            </div>
+        </nav>
+
+        <div class="container-fluid">
+            <div class="row">
+
+                    <g:HTMLPanel ui:field='items' styleName="col-md-2 sidebar">
+
+                        <g:HTML styleName="list-group-item list-group-item-wrap">Relative Humidity</g:HTML>
+
+                    </g:HTMLPanel>
+                    <g:HTMLPanel ui:field="breadcrumb" styleName="col-md-10 col-md-offset-2 main">
+
+                    </g:HTMLPanel>
+                    <g:HTMLPanel ui:field="controls" styleName="col-md-10 col-md-offset-2 main"></g:HTMLPanel>
+                    <g:AbsolutePanel ui:field="output" styleName="col-md-10 col-md-offset-2 main"></g:AbsolutePanel>
+                    <las:Spinner ui:field="spinner"></las:Spinner>
+
+            </div>
+        </div>
+
+
+    </g:HTMLPanel>
+</ui:UiBinder>

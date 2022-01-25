@@ -1,0 +1,80 @@
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! list_traj_data.jnl
+! Author: ansley 
+! Date: Sep 19 2011
+!      4/2013 ACM Implement the Ferret property ferret_start_memory
+!      12/2016 set list precision to 7
+!
+!
+! Called by Trajectory_Data_Convert_File.jnl 
+! Write csv data: date/time, X, Y, Z, var1, var2, ...
+
+! Cannot list out a pseudo-variable, e.g. Z. In the loop,
+! check for pseutonames. If the variable name is a pseudo-var name, 
+! write out name_1 e.g. Z_1 with all the same attributes.
+
+DEFINE SYMBOL data_initialization_script = Trajectory_initialize_data_insitu
+DEFINE SYMBOL data_initialization_script = feature_initialize_data_insitu
+
+GO LAS_initialize_region 0
+GO LAS_initialize_data 0
+
+GO LAS_setup_dsg
+
+LET skip_names = {"($feature_variable)", "($rowvar)",  "($dsg_x_var)", "($dsg_y_var)", \
+"($dsg_t_var)", "tmonth", "day_of_year", "sample_number", "lon360"}
+
+IF ($dsg_z_var"0|*>1") THEN LET skip_names = {"($feature_variable)", "($rowvar)",  "($dsg_x_var)", "($dsg_y_var)", \
+"($dsg_z_var)", "($dsg_t_var)", "tmonth", "day_of_year", "sample_number", "lon360"}
+
+
+IF ($custom_skip_listnames"0|*>1") THEN LET skip_names = {"($feature_variable)", "($rowvar)", ($custom_skip_listnames)}
+
+! make the list of variables to write. If lon/lat variables have been
+! expanded onto the X axis they may have been redefined and the file
+! variables included in skip_list_var.
+! Check here for pseudo-variable names such as K; replace with a Ferret-legal name.
+
+LET nlist = 0
+CANCEL SYMBOl comma
+
+LET nvars = ..nvars
+LET varnames = ..varnames
+REPEAT/RANGE=1:`nvars`/name=ivar (\
+  DEFINE SYMBOL ivar = `ivar` ;\
+  DEFINE SYMBOL vname = `varnames[i=($ivar)]` ;\
+  IF `STRINDEX("($skip_list_var%99%)", "($vname)") GT 0` THEN EXIT/CYCLE ;\
+  GO LAS_check_for_pseudoname ($vname);\
+  IF ($isit_pseudo"0|*>1") THEN ;\
+     SET VAR/NAME=($isit_pseudo) '($vname)' ;\
+     DEFINE SYMBOL vname = ($isit_pseudo) ;\
+  ENDIF;\
+  IF `IS_ELEMENT_OF_STR_N("($vname)", skip_names) EQ 0` THEN DEFINE SYMBOL vars_out = ($vars_out)($comma) ($vname) ;\
+  IF ($vars_out"0|*>1") THEN DEFINE SYMBOl comma = , ;\
+  IF `IS_ELEMENT_OF_STR_N("($vname)", skip_names) EQ 0` THEN LET nlist = `nlist+1` ;\
+)
+
+! Do we want the date string or the date coordinate? Or both? List dates.
+IF `($ferret_timelab_res"0|*>1") EQ 0` THEN DEFINE SYMBOL ferret_timelab_res = minute
+
+SET MODE CALENDAR:($ferret_timelab_res)
+
+
+SET LIST/PREC=7
+SET LIST/FILE="($result_ferret_listing_filename)"
+
+! Size of the data variable 
+LET size = `($dsg_x_var),RETURN=isize`
+
+sp rm ($result_ferret_listing_filename)
+IF ($dataset_title_att"0|*>1") THEN 
+   LIST/NOHEAD/NOROW/FILE/CLOBBER/FORMAT=("($dataset_title_att)"/"Total Number of Records", F16.0) SIZE
+ELSE
+   LIST/NOHEAD/NOROW/FILE/CLOBBER/FORMAT=("Total Number of Records", F16.0) SIZE
+ENDIF
+
+DEFINE SYMBOL list_quals = APPEND
+
+LIST/($list_quals)/FILE/($frmt) ($vars_out)
+
+! End of script ---------- list_traj_data.jnl----------------------------

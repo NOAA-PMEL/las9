@@ -1,0 +1,379 @@
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! Timeseries_station_plot.jnl
+!
+! Plot sets of time series from a Discrete Sampling Geometries timeseries dataset
+! 
+! Author: Ansley Manke
+! Date: Nov 2014
+! 3/2019 Rewrite to take advantage of native DSG file handling in Ferret/PyFerret
+!    Multiple stations, 1 variable, plot all stations together on one timeseries plot
+!    One station, multi-variable, plot together as for gridded multi-var time series plots
+!    Not handling multi-var, multi-station plots at this time 
+!      (plot one var, all stations and write a note.
+!
+
+SET MODE verify:always  ! allows for debugging
+
+! Set the gif filename, changing it from .gif to the name from this request
+! Set up to write info to the debug log so that FshowGO can be used
+GO LAS_initial_setup
+
+! Do up to 8 separate stations as their own line plot on the page
+
+LET max_separate_stations = 8
+LET max_labeled_stations = 6
+
+! If they are plotting just one variable, plot the stations together
+! 
+
+IF `($data_count) EQ 1` THEN LET max_separate_stations = 1
+
+
+! Initialize the region and data.
+
+DEFINE SYMBOL data_initialization_script = feature_initialize_data_insitu
+
+DEFINE SYMBOL fview = T
+
+! DEFINE SYMBOLs associated with the region and data and perform any
+! initialization needed for this dataset.
+
+GO LAS_initialize_region 0
+IF ($data_0_var"0|vid>1|*>0")  THEN
+   DEFINE SYMBOL ferret_by_id = 1
+   USE "($data_0_url)"
+   LET varnames = ..varnames
+
+   DEFINE SYMBOL data_0_var = `varnames[i=1]`
+   CANCEL DATA "($data_0_url)"
+ENDIF
+DEFINE SYMBOL data_name_in = ($data_0_var)
+
+REPEAT/RANGE=1:($data_count)/NAME=icount (\
+   GO LAS_initialize_data `icount-1`)
+
+DEFINE SYMBOL data_var = ($data_0_var)  
+
+DEFINE SYMBOL its_insitu = 1
+DEFINE SYMBOL its_tsplot = 1
+DEFINE SYMBOL line_drawn = 1
+
+! Check for errors (They often occur during dataset initialization.)
+
+IF ($error_status"0|*>1") THEN
+  MESSAGE/ERROR **ERROR ($error_string)
+  EXIT/PROGRAM
+ENDIF
+
+! check that the variables are numeric
+
+REPEAT/RANGE=0:`($data_count)-1`/name=q (\
+  DEFINE SYMBOL q =`q`;\
+  LET gettype = ($data_($q)_var);\
+  DEFINE SYMBOL vtype = `gettype,RETURN=dtype`;\
+  IF `($vtype"0|CHAR>1|*>0")` THEN ;\
+     PLOT/vlim=0:1/hlim=0:1/nolab/set {100,101}, {100,101};\
+      PPL AXLABP 0,0;\
+      PPL TICS 0,0,0,0;\
+     PPL PLOT;\
+     DEFINE SYMBOL no_valid_lab = 1;\
+     DEFINE SYMBOL ferret_plot_var = 1;\
+     ANNOTATE/NORM/xpos=0.5/ypos=0.8/halign=0/size=0.14 "Time plot of ($data_title) is invalid: Make another choice";\
+     GO LAS_results box;\
+     EXIT/PROGRAM;\
+ENDIF;\
+)
+
+LET row_expand = EXPND_BY_LEN(XSEQUENCE(prof_id), XSEQUENCE(($rowvar)), rowsum)
+
+! or, make a nominal plot and punt.
+!
+! sh sym data*title*;\
+!     PLOT/vlim=0:1/hlim=0:1/nolab/noaxis {100,101}, {100,101};\
+!     DEFINE SYMBOL no_valid_lab = 1;\
+!     DEFINE SYMBOL ferret_plot_var = 1;\
+!     ANNOTATE/NORM/xpos=0.5/ypos=0.8/halign=0/size=0.14 "Time plot of ($data_title) is invalid: Make another choice";\
+!     GO LAS_results box;\
+!     EXIT/PROGRAM;\
+
+
+! Here is variable 0 title
+DEFINE SYMBOL ferret_title_0 = ($ferret_plot_title"($data_var)")
+LET title_len = STRLEN("($ferret_title_0)")
+
+! Set the URL label for the first dataset.
+GO LAS_url_label 0
+
+! For the annotations
+
+LET data_good = ($data_var)[L=@ngd]
+LET data_bad =  ($data_var)[L=@nbd]
+
+DEFINE SYMBOL ngood_data = `data_good[m=@sum]`
+DEFINE SYMBOL  nbad_data =  `data_bad[m=@sum]`
+
+LET nstations = `nfeatures`
+DEFINE SYMBOL nstations = `nstations`
+
+
+DEFINE SYMBOL margin_del = 0.08  ! If multiple axes for different units
+IF `($data_count) LE 2` THEN DEFINE SYMBOL margin_del = 0
+
+LET vxlo = 0.1 
+LET vxhi = 0.9
+
+LET vylo = 0.16   ! 0.2 >> 0.16
+LET vyhi = 0.98
+
+LET num_colors = nstations
+IF `nstations EQ 1` THEN LET num_colors = ($data_count)
+
+
+show mode linecolors
+IF `num_colors LE 12` THEN
+
+! Redefine color order to blue, red, green, lightblue, purple
+! and add more 
+
+   DEFINE SYMBOL nlinecolors = 13
+   SET MODE LINECOLORS:13
+   ppl color, 2,    0,  0, 100 ! blue
+   ppl color, 3,  100,  0,   0 ! red
+   ppl color, 4,   0, 100,   0 ! green
+   ppl color, 5,   0, 100, 100 ! lightblue
+   ppl color, 6,  100,  0, 100 ! purple
+   PPL color, 7,  100, 50,   0   ! orange
+   PPL color, 8,   0,  55,   0     ! dark green
+   PPL color, 9,  60,   0, 100   ! purple
+   PPL color, 10, 100, 60,  70 ! pink
+   PPL color, 11, 80,  70,  60  ! tan
+   PPL color, 12, 100, 75,   0  ! yellow
+
+   PPL color, ($nlinecolors), 90, 90, 90  !gray
+   DEFINE SYMBOL gryclr = ($nlinecolors)
+
+ELSE
+
+! Define colors to duplicate the color-palette range_of_blues
+   DEFINE SYMBOL nlinecolors =` MOD(num_colors+2, 20)`
+   SET MODE LINECOLORS:`num_colors+2`
+
+   LET del = `1./(num_colors)`
+
+   REPEAT/RANGE=2:`num_colors+1`/NAME=ii (\
+     def sym ii = `ii`;\
+     LET reds = 20 + (($ii)-1)*  (30*del);\
+     LET grns = 30 + (($ii)-1)*  (50*del);\
+     LET blus = 95 + (($ii)-1)*  ( 5*del);\
+	PPL COLOR,`ii`,`reds,prec=5`,`grns,prec=5`,`blus,prec=5`)
+
+   PPL COLOR,($nlinecolors),90,90,90  !gray
+
+   DEFINE SYMBOL gryclr = ($nlinecolors)
+
+ENDIF
+
+
+DEFINE SYMBOL qualifiers = ($qualifiers)/color
+
+
+IF `($data_count) GT 1 AND nstations EQ 1` THEN DEFINE SYMBOL itsa_multi_lineplot = 1
+
+
+
+
+! For 1-variable, 1-station plots, turn on horizontal graticule lines, unless graticules 
+! have been turned off explicitly. Ignore choice of white - its in the menu 
+! but useless for line plots.
+
+IF `($data_count) EQ 1` THEN
+   IF `(nstations GE max_labeled_stations) AND ($ferret_use_graticules"1|1|none>0|notic>0|white>0|*>1)` THEN
+     IF ($ferret_use_graticules"0|black>1|*>0") THEN
+        DEFINE SYMBOL qualifiers = ($qualifiers)/HGRAT=(DASH,COLOR=black)
+        DEFINE SYMBOL ferret_use_graticules = 1
+     ELSE
+        DEFINE SYMBOL qualifiers = ($qualifiers)/HGRAT=(DASH,COLOR=($gryclr"7"))
+        DEFINE SYMBOL ferret_use_graticules = 1
+     ENDIF
+   ENDIF
+ENDIF
+
+! IF `($data_count) GT 1 AND nstations GT 1` THEN
+IF `($data_count) GT 1` THEN
+   IF ($ferret_use_graticules"1|1|none>0|notic>0|white>0|*>1) THEN
+     IF ($ferret_use_graticules"0|black>1|*>0") THEN
+        DEFINE SYMBOL qualifiers = ($qualifiers)/HGRAT=(DASH,COLOR=black)
+        DEFINE SYMBOL ferret_use_graticules = 1
+     ELSE
+        DEFINE SYMBOL qualifiers = ($qualifiers)/HGRAT=(DASH,COLOR=($gryclr"7"))
+        DEFINE SYMBOL ferret_use_graticules = 1
+     ENDIF
+   ENDIF
+ENDIF
+
+GO LAS_set_plot_qualifiers
+define symbol qualifiers ($qualifiers)
+
+! Otherwise turn them on only if requested 
+
+IF `(nstations GT 1) AND ($ferret_use_graticules"0|none>0|notic>0|white>0|*>1)` THEN
+  IF ($ferret_use_graticules"0|black>1") THEN
+     DEFINE SYMBOL qualifiers = ($qualifiers)/HGRAT=(DASH,COLOR=black)
+  ELSE
+     DEFINE SYMBOL qualifiers = ($qualifiers)/HGRAT=(DASH,COLOR=($gryclr"7"))
+  ENDIF
+ENDIF
+
+! Change any line characteristics.  The above LAS_set_plot_qualifiers, doesnt get the right ones 
+! because it depends on the view shape to determine plot type.  This has a multi=D shape for a 1-D line plot.
+
+IF ($ferret_line_or_sym"0|*>1") THEN DEFINE SYMBOL  plotsymbol = 25
+GO set_linesym
+
+
+! Open the window, apply size, scale options
+!
+!c for now, we're just making one plot per page: multi-station for one var or multi-var for one station
+!c Later, define multi viewports for multi-var plots each station or multi-station plots each var.
+
+!c IF `($data_count) EQ 1 OR nstations EQ 1` THEN 
+   DEFINE SYMBOL win_aspect = 0.4
+!cELSE
+!c   DEFINE SYMBOL win_aspect = `0.4 + nstations/max_separate_stations`
+!c
+!c! ? Adjust the aspect ratio to make the plots more uniformly
+!c!   shaped as there are more and more on the page?
+!c
+!c   LET aspects = {0.4,0.45,0.575,0.7,0.825, 0.95, 1.075, 1.2}
+!c   DEFINE SYMBOL win_aspect = `aspects[i=($data_count)]`
+!c
+!cENDIF
+
+GO LAS_open_window
+
+DEFINE VIEW/AXES/X=0.08:0.99/YLIM=0.07:0.96 full_view
+DEFINE VIEW/AXES/X=0.08:0.99/YLIM=0.07:0.96 full_viewr
+SET VIEW full_view
+
+PPL TICS,.1,.125,,,0,1
+
+
+! Set up variables - multiple stations plotted on a common time axis
+
+LET tmin = time[L=@min]
+LET tmax = time[L=@max]
+LET t1 = `tmin[e=@min]`
+LET t2 = `tmax[e=@max]`
+LET ntimes = `time,RETURN=lsize`
+
+! Used by the results script for the time range
+
+DEFINE AXIS/T=`t1,prec=15`:`t2,prec=15`/npoints=`ntimes`/UNITS=seconds/T0="`time.time_origin`" taxis_all
+LET tt_all = t[gt=taxis_all]
+
+
+! Dataset with just one point.  Make a nominal plot and exit
+
+IF `ntimes EQ 1 OR t1 EQ t2` THEN
+   LET t1 = `t1 - 18000`
+   LET t2 = `t2 + 18000`
+   LET ntimes = 5
+   DEFINE AXIS/T=`t1,prec=15`:`t2,prec=15`/npoints=`ntimes`/UNITS=seconds/T0="`time.time_origin`" taxis_all
+
+   LET var = {,,`($data_var)`,,}
+   
+   LET tt5 = t[gt=taxis_all]
+   LET plot_var = reshape(var,tt5)
+   PLOT/symbol=19/siz=0.12/color/thick/nolab reshape(var,tt5)
+
+   DEFINE SYMBOL data_0_var = plot_var
+   DEFINE SYMBOL result_type = tline
+   DEFINE SYMBOL note_num = `($note_num"0") + 1`
+   DEFINE SYMBOL note_($note_num)_lab = Request includes just one time point
+
+   GO LAS_results ($result_type)
+   exit/program
+ENDIF
+
+DEFINE SYMBOL vtype = `($data_var),RETURN=dtype`
+   IF ($vtype"0|CHAR>1|*>0") THEN 
+   DEFINE SYMBOL error_string = Invalid data type for variable ($ferret_title_0). Choose another variable.
+   MESSAGE/ERROR **ERROR ($error_string)
+   EXIT/PROGRAM
+ENDIF
+
+
+! Native time-series plot of multiple stations, one variable.
+! (note in auto-labeling the series, if data all-missing,
+!  Ferret adds "No Valid Data" to the key label.  If this makes
+!  the label long, then it's broken into 2 lines and writes, smaller.
+!  Can lead to inconsistent label sizes.  See put_key.F)
+
+! Multi-station plot of one variable
+IF `($data_count) EQ 1` THEN
+
+   DEFINE VIEW/AXES/X=0.06:0.99/YLIM=`vylo+0.05`:0.96 full_view
+   SET VIEW full_view
+   PLOT($qualifiers)/KEY/set ($data_var)
+     PPL YLAB " "
+     PPL PLOT
+
+ELSE
+
+
+! multi-var.
+
+! Multi-variable plots:
+! If with multiple stations: FOR NOW plot just the first station.
+
+   IF `nstations GT 1` THEN 
+      DEFINE SYMBOL qualifiers = ($qualifiers)/M=1
+      DEFINE SYMBOL note_num = `($note_num"0") + 1`
+      DEFINE SYMBOL first_feature_only = 1  ! will make adjustments in annotations
+
+      GO dsg_feature_name
+      DEFINE SYMBOL first_feature_id = `feature_name[m=1]`
+      DEFINE SYMBOL note_($note_num)_lab = NOTE: multiple stations and multiple variables requested: showing first station
+      DEFINE SYMBOL prof_traj_shown = 1
+   ENDIF
+
+   DEFINE SYMBOL iv = 0
+   REPEAT/RANGE=1:($data_count)/NAME=v (\
+      DEFINE SYMBOL plot_arg = ($plot_arg) ($data_($iv)_var);\
+      IF `v LT ($data_count)` THEN DEFINE SYMBOL plot_arg = ($plot_arg), ;\
+      DEFINE SYMBOL iv = `($iv)+1` )
+
+   PLOT($qualifiers)/COLOR/set ($plot_arg)
+     IF ($labnum_datitl"0|*>1") THEN go unlabel ($labnum_datitl)
+
+     
+DEFINE SYMBOL ngood_data = `data_good[m=@sum]`
+DEFINE SYMBOL  nbad_data =  `data_bad[m=@sum]`
+
+LET nstations = `nfeatures`
+DEFINE SYMBOL nstations = `nstations`
+   PPL PLOT
+ENDIF
+
+! Add annotations for the x-y-z selection, year if needed
+
+IF ($labnum_x%0|*>1%) THEN DEFINE SYMBOL longitude_lab = ($lab($labnum_x))
+IF ($labnum_y%0|*>1%) THEN DEFINE SYMBOL latitude_lab = ($lab($labnum_y))
+IF ($labnum_z%0|*>1%) THEN DEFINE SYMBOL depth_lab = ($lab($labnum_z))
+IF ($labnum_year%0|*>1%) THEN DEFINE SYMBOL year_lab = ($lab($labnum_year))
+
+! Add annotations for timeseries-feature information
+
+GO feature_labels  
+
+! Save the results
+! The script wants to get the time-axis end points.
+
+DEFINE SYMBOL data_0_var = tt_all
+
+DEFINE SYMBOL result_type = tline
+
+GO LAS_results ($result_type)
+
+! End of file ------------ Timeseries_station_plot.jnl--------------------------
+

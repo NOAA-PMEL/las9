@@ -1,0 +1,10 @@
+import pmel.sdig.las.Site
+
+model {
+    Site site
+}
+
+json g.render(site, [excludes: ["datasets"]]) {
+    footerLinks g.render(site.footerLinks)
+    datasets g.render(site.datasets, [excludes: ["datasets","variables"]])
+}

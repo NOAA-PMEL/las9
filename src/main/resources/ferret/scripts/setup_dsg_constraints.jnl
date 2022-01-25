@@ -1,0 +1,144 @@
+! setup_dsg_constraints.jnl
+! Define mask that captures variable constraints for Prop-Prop plots
+! of DSG datasets
+!
+
+! A constraint comes as a set of 4 symbols
+! each var ge one value and le another value.
+
+!   constraint_n_lhs  is the variable name
+!   constraint_n_op   is the operation (le, ge)
+!   constraint_n_rhs  is the value 
+!   constraint_n_type must be "variable"  (will there be other types of constraints?)
+
+DEFINE SYMBOL translate_math = 1
+
+! Define var_mask variable with all of the variable constraints.
+! When there is a longitude constraint, define symbols with the values,
+! to be used in making the map underlying prop-prop plots.
+
+LET vnames = ..varnames
+
+DEFINE SYMBOL var_mask = var_mask_0
+LET var_mask_0 = 1  ! may be redefined below.
+LET nmaskx = 0
+
+let npts = nx_var
+
+LET text_mask = 1
+let var_mask = 1
+let constraints_mask = 1
+
+LET nx_var = `($rowvar)[m=@sum]`
+
+! Define mask based on constraints. Check for variable constraints on 
+! a quoted variable e.g. 'K'
+
+
+IF `($dsg_x_var"0|*>1") EQ 0` THEN DEFINE SYMBOL dsg_x_var = 0
+IF `($dsg_y_var"0|*>1") EQ 0` THEN DEFINE SYMBOL dsg_y_var = 0
+IF `($dsg_z_var"0|*>1") EQ 0` THEN DEFINE SYMBOL dsg_z_var = 0
+IF `($dsg_t_var"0|*>1") EQ 0` THEN DEFINE SYMBOL dsg_t_var = 0
+!  IF ($constraint_($ic)_lhs"0|($dsg_x_var)*>1|*>0") THEN EXIT/LOOP;\
+!  IF ($constraint_($ic)_lhs"0|($dsg_y_var)*>1|*>0") THEN EXIT/LOOP;\
+!  IF ($constraint_($ic)_lhs"0|($dsg_z_var)*>1|*>0") THEN EXIT/LOOP;\
+!  IF ($constraint_($ic)_lhs"0|($dsg_t_var)*>1|*>0") THEN EXIT/LOOP;\
+
+REPEAT/RANGE=0:100/NAME=ic (\
+  DEFINE SYMBOL ic = `ic`;\
+  IF `($constraint_($ic)_lhs"0|*>1") EQ 0` THEN EXIT/LOOP;\
+  DEFINE SYMBOL cvar = ($constraint_($ic)_lhs);\
+  DEFINE SYMBOL cvarnq = ($constraint_($ic)_lhs);\
+  GO LAS_unquote_string cvarnq;\
+  LET has_var = `(IS_ELEMENT_OF_STR_N(vnames, "($cvarnq)") GT 0) OR (IS_ELEMENT_OF_STR_N(vnames, "($cvarnq)_") GT 0)`;\
+  IF `has_var EQ 0` THEN EXIT/CYCLE;\
+  IF `IS_ELEMENT_OF_STR_N(vnames, "($cvar)_") GT 0` THEN DEFINE SYMBOL cvar = ($cvar)_;\
+  IF `($constraint_($ic)_type"0|variable>1|*>0") EQ 0` THEN EXIT/CYCLE;\
+  LET var_mask_($ic) = IF ($cvar) ($constraint_($ic)_op) ($constraint_($ic)_rhs) THEN 1; \
+  LET nc = `($cvar),RETURN=isize`;\
+  LET var_mask_($ic) = IF ($cvar) ($constraint_($ic)_op) ($constraint_($ic)_rhs) THEN 1; \
+  IF ($constraint_($ic)_rhs"0|NaN>1|*>0") THEN LET var_mask_($ic) = IF ($cvar) THEN 1;\
+  LET nmaskx = `nmaskx+1`;\
+  IF `nmaskx GT 1` THEN DEFINE SYMBOL var_mask = ($var_mask)* var_mask_($ic) ;\
+  )
+
+! Handle details for constraints in space and time
+
+
+REPEAT/RANGE=0:100/NAME=ic (\
+  DEFINE SYMBOL ic = `ic`;\
+  IF `($constraint_($ic)_lhs"0|*>1") EQ 0` THEN EXIT/LOOP;\
+  IF `STRINDEX("($constraint_($ic)_lhs%0%)", "($dsg_y_var)") AND ($constraint_($ic)_op"0|gt>1|*>0")` THEN DEFINE SYMBOL constr_y_min = ($constraint_($ic)_rhs) ;\
+  IF `STRINDEX("($constraint_($ic)_lhs%0%)", "($dsg_y_var)") AND ($constraint_($ic)_op"0|le>1|*>0")` THEN DEFINE SYMBOL constr_y_max = ($constraint_($ic)_rhs) ;\
+  IF `STRINDEX("($constraint_($ic)_lhs%0%)", "($dsg_z_var)") AND ($constraint_($ic)_op"0|gt>1|*>0")` THEN DEFINE SYMBOL constr_z_min = ($constraint_($ic)_rhs) ;\
+  IF `STRINDEX("($constraint_($ic)_lhs%0%)", "($dsg_z_var)") AND ($constraint_($ic)_op"0|le>1|*>0")` THEN DEFINE SYMBOL constr_z_max = ($constraint_($ic)_rhs) ;\
+  IF `STRINDEX("($constraint_($ic)_lhs%0%)", "($dsg_t_var)") AND ($constraint_($ic)_op"0|gt>1|*>0")` THEN DEFINE SYMBOL constr_tim_min = ($constraint_($ic)_rhs) ;\
+  IF `STRINDEX("($constraint_($ic)_lhs%0%)", "($dsg_t_var)") AND ($constraint_($ic)_op"0|le>1|*>0")` THEN DEFINE SYMBOL constr_tim_max = ($constraint_($ic)_rhs) ;\
+  )
+ 
+IF `nmaskx GT 0` THEN LET var_mask = ($var_mask)
+
+
+! define a region for the plot - needs constr_x_max to be defined if constr_x_min is, etc
+! If that constraint was not defined, use the data max
+
+LET dir_var = XSEQUENCE(($dsg_x_var))
+IF `($constr_x_min"-1.e34|*>1") NE -1.e34 AND ($constr_x_max"-1.e34|*>1") EQ -1.e34` THEN DEFINE SYMBOL constr_x_max = `dir_var[x=@max]`
+IF `($constr_x_max"-1.e34|*>1") NE -1.e34 AND ($constr_x_min"-1.e34|*>1") EQ -1.e34` THEN DEFINE SYMBOL constr_x_min = `dir_var[x=@min]`
+
+LET dir_var = XSEQUENCE(($dsg_y_var))
+IF `($constr_y_min"-1.e34|*>1") NE -1.e34 AND ($constr_y_max"-1.e34|*>1") EQ -1.e34` THEN DEFINE SYMBOL constr_y_max = `dir_var[x=@max]`
+IF `($constr_y_max"-1.e34|*>1") NE -1.e34 AND ($constr_y_min"-1.e34|*>1") EQ -1.e34` THEN DEFINE SYMBOL constr_y_min = `dir_var[x=@max]`
+
+LET dir_var = XSEQUENCE(($dsg_y_var))
+IF `($constr_z_min"-1.e34|*>1") NE -1.e34 AND ($constr_z_max"-1.e34|*>1") EQ -1.e34` THEN DEFINE SzMBOL constr_z_max = `dir_var[x=@max]`
+IF `($constr_z_max"-1.e34|*>1") NE -1.e34 AND ($constr_z_min"-1.e34|*>1") EQ -1.e34` THEN DEFINE SzMBOL constr_z_min = `dir_var[x=@max]`
+
+LET dir_var = XSEQUENCE(($dsg_y_var))
+IF `($constr_t_min"-1.e34|*>1") NE -1.e34 AND ($constr_t_max"-1.e34|*>1") EQ -1.e34` THEN DEFINE StMBOL constr_t_max = `dir_var[x=@max]`
+IF `($constr_t_max"-1.e34|*>1") NE -1.e34 AND ($constr_t_min"-1.e34|*>1") EQ -1.e34` THEN DEFINE StMBOL constr_t_min = `dir_var[x=@max]`
+
+! Define a plot qualifier with the region - then maps etc will shrink to the requested size.
+IF `($constr_x_min"-1.e34|*>1") NE -1.e34 ` THEN DEFINE SYMBOL qualifiers = ($qualifiers)/x=($constr_x_min):($constr_x_max)
+IF `($constr_y_min"-1.e34|*>1") NE -1.e34 ` THEN DEFINE SYMBOL qualifiers = ($qualifiers)/y=($constr_y_min):($constr_y_max)
+IF `($constr_z_min"-1.e34|*>1") NE -1.e34 ` THEN DEFINE SYMBOL qualifiers = ($qualifiers)/z=($constr_z_min):($constr_z_max)
+IF `($constr_t_min"-1.e34|*>1") NE -1.e34 ` THEN DEFINE SYMBOL qualifiers = ($qualifiers)/t=($constr_t_min):($constr_t_max)
+
+sh sym qualifiers
+
+! Now look for text constraints.  If the constraint is on the feature variable, ignore it.
+! Those constrataints will be passed as a Ferret property.
+
+LET ntxtconstr = 0
+REPEAT/RANGE=0:100/NAME=ic (\
+  DEFINE SYMBOL ic = `ic`;\
+  IF `($constraint_($ic)_lhs"0|*>1") EQ 0` THEN EXIT/LOOP;\
+  DEFINE SYMBOL cvar = ($constraint_($ic)_lhs);\
+  IF `($cvar"0|($feature_variable%A%)>0|*>1") EQ 0` THEN EXIT/CYCLE;\
+  LET ignore = 0;\
+  IF ($ignore_vars"0|*>1") THEN LET ignore = \
+   `(IS_ELEMENT_OF_STR_N(ignore_constraints, "($cvar)") GT 0) OR \
+   (IS_ELEMENT_OF_STR_N(ignore_constraints, "($cvar)_") GT 0)`;\
+  IF `ignore GE 0` THEN EXIT/CYCLE;\
+  IF `($constraint_($ic)_type"0|text>1|*>0") EQ 1` THEN LET ntxtconstr = `ntxtconstr+1`;\
+  )
+
+DEFINE SYMBOL ic = 0
+LET i_mask = _m[ge=($rowvar)]
+DEFINE SYMBOL itxt = 0
+DEFINE SYMBOL text_mask = 0
+
+IF `ntxtconstr EQ 0` THEN EXIT/SCRIPT
+
+REPEAT/RANGE=0:100/NAME=ic (GO set_text_constraints;\
+ IF `text_constraints_done EQ 1` THEN EXIT/LOOP)
+
+! Text masks are zero and 1 so they can be added.
+! Now make it a mask with missing and 1, to multiply with var_mask
+
+LET text_mask_zero = ($text_mask)
+LET text_mask = IF text_mask_zero NE 0 THEN 1
+
+
+
+! End of  ------------- setup_dsg_constraints.jnl--------------------------

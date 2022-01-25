@@ -1,0 +1,84 @@
+! decimation_labels.jnl
+
+! Don't label the decimation counts.  It's too inaccurate and confusing.
+
+
+IF ($nolabels_decimation_counts"0|*>1") THEN ! make points-shown annotations or not
+
+   DEFINE SYMBOL note_($note_num)_lab = ($prof_traj_shown) ($feature_type)($c_s) shown
+
+   DEFINE SYMBOL note_num = `($note_num"0") + 1`
+   DEFINE SYMBOL note_($note_num)_lab = Data subsampled for efficiency (<a target=&quot;_blank&quot; href=doc/piecewise_decimation_reference.html>explanation</a>)
+ELSE  ! make points-shown annotations or not
+
+   LET full_good = -9999
+
+   IF `(IS_ELEMENT_OF_STR_N(varnames, "nobs_full") EQ 0) OR\
+    (IS_ELEMENT_OF_STR_N(varnames, "nobs_deci") EQ 0)` THEN 
+       MESSAGE/ERROR **ERROR nobs_full and nobs_deci not in the netCDF file"
+       EXIT/PROGRAM
+   ENDIF
+
+! compute overall fraction for decimation of the features returned
+    LET frac_deci = `nobs_deci[m=@sum]/nobs_full[m=@sum]`
+    LET frac_deci_all = `nobs_deci[m=@sum]/nobs_full[m=@sum]`
+
+   IF `frac_deci GT 1` THEN
+      LET frac_deci = 1 
+      
+   ELIF `frac_deci GT 0` THEN 
+      LET full_good = ($ngood_data)/frac_deci
+      LET full_bad  = ($nbad_data)/frac_deci
+   ENDIF
+   let full_all = `full_good`
+
+! Make the computation on a per-feature basis, the count of good data
+! in the feature related to the decimation fraction for that feature
+
+   LET frac_deci = nobs_deci/nobs_full  ! fraction for each feature
+
+   LET maxrow = `($rowvar)[m=@max]`
+   DEFINE AXIS/x=1:`maxrow`:1 xrow
+   LET xvar = x[gx=xrow]
+
+   LET ok = IF ($data_var_in) THEN 1
+   LET ok2d = EXPNDI_BY_M_COUNTS(ok, ($rowvar), xvar)
+   LET ok_feature = ok2d[x=@sum] 
+   LET ok_feature_full = IF frac_deci GT 0 THEN ok_feature/frac_deci ELSE 0
+   LET full_good = ok_feature_full[m=@SUM]
+
+   IF `full_good GT 1.e6` THEN 
+      DEFINE SYMBOL approx_msg = `full_good/1.e6,prec=3` million
+   ELIF `full_good GT 1.e3` THEN 
+      DEFINE SYMBOL approx_msg = `full_good/1.e3,prec=2` thousand 
+   ELSE
+      DEFINE SYMBOL approx_msg = `full_good,prec=3`
+   ENDIF
+
+   IF `($nbad_data"0|*") GT 0` THEN
+      LET full_bad = full_good * ($nbad_data)/($ngood_data)
+      IF `full_bad GT 1.e6` THEN 
+         DEFINE SYMBOL approx_bad = `full_bad/1.e6,prec=2` million
+      ELIF `full_bad GT 1.e3` THEN 
+         DEFINE SYMBOL approx_bad = `full_bad/1.e3,prec=2` thousand 
+      ELSE
+         DEFINE SYMBOL approx_bad = `full_bad,prec=2`
+      ENDIF
+   ENDIF
+
+   DEFINE SYMBOL note_($note_num)_lab =  ($prof_traj_shown) ($feature_type)($c_s), approx. ($approx_msg) valid obs
+   IF ($approx_bad"0|*>1") THEN \
+   DEFINE SYMBOL note_($note_num)_lab =  ($prof_traj_shown) ($feature_type)($c_s), approx. ($approx_msg) valid obs plus ($approx_bad) missing
+
+! Put a link to the doc containing description of the decimation scheme. 
+   DEFINE SYMBOL note_num = `($note_num"0") + 1`
+   DEFINE SYMBOL note_($note_num)_lab = Subsample of ($ngood_data) valid points shown (<a target=&quot;_blank&quot; href=doc/piecewise_decimation_reference.html>explanation</a>)
+   IF `($nbad_data"0") GT 0` THEN \
+      DEFINE SYMBOL note_($note_num)_lab = Subsample of ($ngood_data) valid and ($nbad_data) missing \
+points shown (<a target=&quot;_blank&quot; href=doc/piecewise_decimation_reference.html>explanation</a>)
+
+ENDIF ! make points-shown annotations or not
+
+
+!---------------- end of decimation_labels.jnl -------------------------
+

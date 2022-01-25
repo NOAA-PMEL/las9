@@ -1,0 +1,20 @@
+<ui:UiBinder xmlns:ui='urn:ui:com.google.gwt.uibinder'
+             xmlns:g='urn:import:com.google.gwt.user.client.ui'
+             xmlns:ma="urn:import:gwt.material.design.addins.client"
+             xmlns:m='urn:import:gwt.material.design.client.ui'
+             xmlns:las="urn:import:pmel.sdig.las.client.widget">
+    <m:MaterialColumn ui:field="panel" grid="s12" paddingLeft="2" paddingRight="8">
+        <m:MaterialCollapsible ui:field="annotationsCollapse">
+            <m:MaterialCollapsibleItem>
+                <m:MaterialCollapsibleHeader ui:field="breadcrumbs" paddingLeft="8" paddingBottom="0" marginBottom="0">
+                        <m:MaterialIcon display="INLINE" iconType="ADD" iconColor="BLUE" iconPosition="RIGHT"></m:MaterialIcon>
+                </m:MaterialCollapsibleHeader>
+                <m:MaterialCollapsibleBody ui:field="annotations" backgroundColor="WHITE" paddingTop="0" paddingLeft="0" paddingRight="0">
+                    <m:MaterialPanel marginTop="8" paddingLeft="8" ui:field="annotationPanel" m:id="annotations"  textAlign="LEFT" overflow="AUTO">
+                    </m:MaterialPanel>
+                </m:MaterialCollapsibleBody>
+            </m:MaterialCollapsibleItem>
+        </m:MaterialCollapsible>
+        <m:MaterialImage ui:field="image"></m:MaterialImage>
+    </m:MaterialColumn>
+</ui:UiBinder>

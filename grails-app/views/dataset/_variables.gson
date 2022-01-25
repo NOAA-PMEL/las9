@@ -1,0 +1,5 @@
+import pmel.sdig.las.Variable
+model {
+    List<Variable> variables
+}
+json tmpl.variable(variables)

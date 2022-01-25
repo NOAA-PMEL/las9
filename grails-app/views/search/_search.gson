@@ -1,0 +1,16 @@
+import pmel.sdig.las.SearchResults
+
+model {
+   SearchResults searchResults
+}
+
+json {
+//   "datasetList" tmpl.shallow('dataset', searchResults.getDatasetList())
+   "datasetList" g.render(template:"shallow", collection: searchResults.getDatasetList(), var:'dataset')
+   "total" searchResults.getTotal()
+   "start" searchResults.getStart()
+   "end" searchResults.getEnd()
+}
+
+
+

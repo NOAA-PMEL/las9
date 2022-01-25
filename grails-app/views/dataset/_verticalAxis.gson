@@ -1,0 +1,7 @@
+import pmel.sdig.las.VerticalAxis
+model {
+    VerticalAxis verticalAxis
+}
+json g.render(verticalAxis, [excludes: ["zvalues", "variable"]]) {
+    zvalues g.render(template: "zvalues", model: [zvalues: verticalAxis.getZvalues()])
+}

@@ -1,0 +1,7 @@
+#!/bin/sh
+echo "Making sure the output directory exists and is empty..."
+# Make sure the output directory exists
+mkdir -p  src/main/webapp/output
+
+# Make sure it's empty
+rm -rf src/main/webapp/output/*

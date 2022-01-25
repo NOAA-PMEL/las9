@@ -1,0 +1,6 @@
+! custom_dataset_definitions.jnl
+!
+! If the dataset has custom settings or scripts define them here.
+! see the example under the socat svn branch
+
+!---------------- end of custom_dataset_definitions.jnl -------------------------

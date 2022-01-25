@@ -1,0 +1,9 @@
+import pmel.sdig.las.Variable
+model {
+    Vector vector
+}
+json g.render(vector, [excludes: ["dataset"]]) {
+    u g.render(vector.u)
+    v g.render(vector.v)
+    w g.render(vector.w)
+}

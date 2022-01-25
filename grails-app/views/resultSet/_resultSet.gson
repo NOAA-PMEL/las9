@@ -1,0 +1,14 @@
+import pmel.sdig.las.ResultSet
+
+model {
+    ResultSet resultSet
+}
+
+json g.render(resultSet, [excludes: ["operation"]]) {
+    if ( resultSet.mapScale )
+        mapScale g.render(resultSet.mapScale)
+    if ( resultSet.animation)
+        animation g.render(resultSet.animation)
+    results g.render(resultSet.results)
+    annotationGroups g.render(resultSet.annotationGroups)
+}

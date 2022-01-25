@@ -1,0 +1,6 @@
+import pmel.sdig.las.Dataset
+
+model {
+    List<Dataset> datasetList
+}
+json tmpl.dataset('dataset', datasetList)

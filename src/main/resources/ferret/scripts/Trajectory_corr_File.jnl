@@ -1,0 +1,26 @@
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! Trajectory_corr_File.jnl
+! 
+! Author: Ansley Manke
+! Date: 8/2011
+
+! Trajectory_corr_File.jnl initializes data from a trajectory-
+! request from ERDDAP and makes a listing.
+!
+! Set up to write info to the debug log so that FshowGO can be used
+GO LAS_initial_setup 0
+
+set mode ver:always
+DEFINE SYMBOL data_initialization_script = feature_initialize_data_insitu
+
+IF ($data_2_var"0|vid>1|*>0")  THEN 
+   DEFINE SYMBOL ferret_by_id = 1
+   DEFINE SYMBOL ferret_palette = more_by_levels
+   DEFINE SYMBOL ferret_poly_levels = 1.0D
+ENDIF
+
+DEFINE SYMBOL its_trajectory_corr = 1
+GO list_prop_prop
+
+! ----- End of Trajectory_corr_File.jnl ------------------------------------------------
+

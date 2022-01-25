@@ -1,0 +1,104 @@
+<!DOCTYPE ui:UiBinder SYSTEM "http://dl.google.com/gwt/DTD/xhtml.ent">
+<ui:UiBinder xmlns:ui='urn:ui:com.google.gwt.uibinder'
+             xmlns:g='urn:import:com.google.gwt.user.client.ui'
+             xmlns:b3="urn:import:org.gwtbootstrap3.extras.slider.client.ui"
+             xmlns:b="urn:import:org.gwtbootstrap3.client.ui"
+             xmlns:las="urn:import:pmel.sdig.las.client.widget">
+    <ui:style>
+        .overflow {
+            overflow-y: auto;
+        }
+        .vert {
+            padding-top: 8px;
+        }
+        .ellipsis {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+    </ui:style>
+    <b:Container fluid="true">
+
+        <b:Nav ui:field="nav">
+            <b:Navbar>
+                    <b:NavbarHeader ui:field="navbarheader">
+                        <b:NavbarBrand ui:field="lasTitle" text="Live Access Server"></b:NavbarBrand>
+                    </b:NavbarHeader>
+                <b:NavbarCollapse b:id="navbar-collapse">
+                <b:NavbarNav>
+                    <b:ButtonGroup dataToggle="BUTTONS" addStyleNames="{style.vert}">
+                        <b:RadioButton title="One Plot" ui:field="onePanel" name="panels" active="true">One Plot</b:RadioButton>
+                        <b:RadioButton title= "Two Plots" ui:field="twoPanel" name="panels">Two Plots</b:RadioButton>
+                        <b:RadioButton title="Four Plots" ui:field="fourPanel" name="panels">Four Plots</b:RadioButton>
+                    </b:ButtonGroup>
+                </b:NavbarNav>
+                </b:NavbarCollapse>
+            </b:Navbar>
+        </b:Nav>
+
+
+            <b:Row>
+                <b:Column size="SM_2" ui:field="navcolumn">
+                    <b:Button ui:field="update" type="SUCCESS" text="Update Plot"></b:Button>
+                    <b:NavTabs ui:field="navtabs">
+                        <b:TabListItem ui:field="dataTabItem01" active="true" dataTarget="#data01" text="Data"/>
+                        <b:TabListItem ui:field="controlsTabItem" dataTarget="#controls01" text="Controls"/>
+                    </b:NavTabs>
+                    <b:TabContent>
+                        <b:TabPane active="true" b:id="data01">
+                            <b:LinkedGroup ui:field="dataTab01" addStyleNames="{style.overflow}"></b:LinkedGroup>
+                        </b:TabPane>
+                        <b:TabPane b:id="controls01">
+                            <b:PanelGroup ui:field="controlsTab">
+
+                            </b:PanelGroup>
+                            <!-- b:PanelGroup addStyleNames="{style.overflow}" ui:field="variablesPanel"></b:PanelGroup -->
+                        </b:TabPane>
+                    </b:TabContent>
+
+                </b:Column>
+                <b:Column size="SM_5" ui:field="upperleft">
+                        <b:Breadcrumbs ui:field="breadcrumbs01" addStyleNames="{style.ellipsis}">
+                            <las:Breadcrumb ui:field="home01" text="Home"></las:Breadcrumb>
+                        </b:Breadcrumbs>
+                    <las:OutputPanel title="panel01" ui:field="outputPanel01"></las:OutputPanel>
+                </b:Column>
+
+                <b:Column size="SM_5" ui:field="upperright">
+                    <b:Container fluid="true">
+                        <b:Row>
+                            <b:Column size="SM_1">
+                                <b:Modal ui:field="datasetPanel02" title="Panel Settings" closable="true" fade="true" dataBackdrop="STATIC" dataKeyboard="true" b:id="myModal">
+                                    <b:ModalBody>
+                                        <b:NavTabs ui:field="navtabs02">
+                                            <b:TabListItem ui:field="dataTabItem02" active="true" dataTarget="#data02" text="Data"/>
+                                            <b:TabListItem ui:field="controlsTabItem02" dataTarget="#controls02" text="Controls"/>
+                                        </b:NavTabs>
+                                        <b:TabContent>
+                                            <b:TabPane active="true" b:id="data02">
+                                                <b:LinkedGroup ui:field="dataTab02" addStyleNames="{style.overflow}"></b:LinkedGroup>
+                                            </b:TabPane>
+                                            <b:TabPane b:id="controls02">
+                                                <b:PanelGroup ui:field="controlsTab02"></b:PanelGroup>
+                                            </b:TabPane>
+                                        </b:TabContent>
+                                    </b:ModalBody>
+                                </b:Modal>
+
+                                <b:Button ui:field="panelControlButton02" visible="false" dataTarget="#myModal" dataToggle="MODAL" type="PRIMARY" size="SMALL" iconSize="LARGE" icon="GEARS"></b:Button>
+                            </b:Column>
+                            <b:Column size="SM_11">
+                                <b:Breadcrumbs ui:field="breadcrumbs02" addStyleNames="{style.ellipsis}" visible="false">
+                                    <las:Breadcrumb ui:field="home02" text="Home"></las:Breadcrumb>
+                                </b:Breadcrumbs>
+                            </b:Column>
+                        </b:Row>
+                    </b:Container>
+
+
+
+                    <las:OutputPanel title="panel02" ui:field="outputPanel02"></las:OutputPanel>
+                </b:Column>
+            </b:Row>
+        </b:Container>
+</ui:UiBinder>

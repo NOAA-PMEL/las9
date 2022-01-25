@@ -1,0 +1,190 @@
+! LAS_xytvar_griddat_setup.jnl 
+! Set up property-property plots for gridded datasets
+
+! Draw the underlying axes of a property-property plot,
+! formatted as a longitude, latitude or time axis.
+
+! variable p is the prop_var (independent axis) masked for any subset chosen and
+!  with XSEQUENCE applied to put it on an x axis
+! variable q is the data_var (dependent axis) masked for any subset chosen and
+!  with XSEQUENCE applied to put it on an x axis
+
+! Define two viewports filling the window and do the axes in one, the 
+! plot in the other. If the annotations are being done separately,
+! draw in the viewports defined in set_full_margins.jnl
+
+! May turn off axis labeling later
+PPL TICS .6,.125,.6,.125
+PPL TICS .125,.2,.125,.2
+PPL axlabp,-1,-1
+
+DEFINE SYMBOL xvar = constraints_mask*xvar
+DEFINE SYMBOL yvar = constraints_mask*yvar
+LET p = ($xvar) 
+LET q = ($yvar)
+
+! Initialize these, used only for DSG data in the calling script
+LET itsa_map_plot = 0
+LET itsa_tim_plot = 0
+LET itsa_tim_prop = 0
+
+CANCEL SYMBOL set_window_quals
+
+! size for the label that says a variable is all-missing
+DEFINE SYMBOL miss_lab_siz = 0.14
+
+! For thumbnail plots
+DEFINE SYMBOL mainlab_size = 0.14
+DEFINE SYMBOL errlab_size = 0.16
+IF ($ferret_thumb"0|0|*>1") THEN  
+   DEFINE SYMBOL poly_size = 1.3
+   DEFINE SYMBOL is_thumb = 1
+   DEFINE SYMBOL mainlab_size = 0.22
+   DEFINE SYMBOL errlab_size = 0.2
+   DEFINE SYMBOL thumb_alab_size = PPL AXLSZE,.14,.14
+   DEFINE SYMBOL txl_lab_size = .14
+   PPL TXLSZE,($txl_lab_size)
+   LET labfac = 1.8
+   DEFINE SYMBOL ax_label_resize PPL LABSET,,`0.12*labfac`,`0.12*labfac`
+   DEFINE SYMBOL miss_lab_siz = 0.24
+
+   DEFINE SYMBOL do_rsquare = 0
+
+ENDIF
+
+DEFINE SYMBOL win_asp = /ASPECT=.8
+DEFINE SYMBOL set_window_quals = /SIZE=($ferret_size"0.5")($win_asp)
+
+DEFINE VIEWPORT/XLIM=0:1/YLIM=0:1 vfull1
+DEFINE VIEWPORT/XLIM=0:1/YLIM=0:1 vfull2
+
+DEFINE SYMBOL view1 = vfull1
+DEFINE SYMBOL view2 = vfull2
+IF ($ferret_annotations"0|*>1") THEN
+   DEFINE SYMBOL view1 = full_view
+   DEFINE SYMBOL view2 = full_view2
+ENDIF
+
+SET VIEW ($view1)
+
+! If this symbol is set during this script, then
+! the script will make a blank plot and exit.
+CANCEL SYMBOL put_label
+
+
+let pq = p*q
+let pqmask = pq-pq
+let p_var = p + pqmask
+let q_var = q + pqmask
+
+! Define some variables used below
+LET pminmax = MINMAX(p_var)
+LET qminmax = MINMAX(q_var)
+
+! Check for all-bad data. pminmax and qminmax depend on both p and q.
+! If bad, figure out which variable is all-bad and set the label string. 
+
+DEFINE SYMBOL isbad =  `pminmax[i=2] - pminmax[i=1] `
+IF ($isbad"0|bad>1|*>0")  THEN 
+   DEFINE SYMBOL qgood = `q[i=@ngd] GT 0`
+   DEFINE SYMBOL pgood = `p[i=@ngd] GT 0`
+   DEFINE SYMBOL bad_verb = is
+   IF `($pgood) EQ 0 AND ($qgood) NE 0` THEN DEFINE SYMBOL bad_title = ($ferret_title_0) 
+   IF `($pgood) NE 0 AND ($qgood) EQ 0` THEN DEFINE SYMBOL bad_title = ($ferret_title_1) 
+   IF `($pgood) EQ 0 AND ($qgood) EQ 0` THEN 
+      DEFINE SYMBOl bad_verb = are
+      DEFINE SYMBOL bad_title = ($ferret_title_0) and <nl>($ferret_title_1) 
+   ENDIF
+ENDIF
+
+IF ($bad_title"0|*>1") THEN
+   PLOT/VS/NOLAB/SYM=dot {0,1}, {0,1}
+   IF ($ferret_thumb"0|0|*>1") THEN  
+      LET ylab_bad = `($ppl$ylen)-3*($miss_lab_siz)`
+      LABEL/NOUSER 0.2, `ylab_bad-0.4`, -1, 0, ($miss_lab_siz), @AS($bad_title)<NL>($bad_verb) All-Missing
+      DEFINE SYMBOL no_novalid_lab = 1
+      CANCEL SYMBOL bad_title
+   ELSE
+      LET ylab_bad = `($ppl$ylen)-2*($miss_lab_siz)`
+      LABEL/NOUSER 0.2, `ylab_bad-0.2`, -1, 0, ($miss_lab_siz), @AS($bad_title) ($bad_verb) All-Missing
+      DEFINE SYMBOL no_novalid_lab = 1
+      CANCEL SYMBOL bad_title
+   ENDIF
+   DEFINE SYMBOL ngood_data = -1   ! Dont do another label in LAS_results.
+   EXIT/SCRIPT
+ENDIF
+
+! Define axes for both variables using the range in the data
+
+LET amin = pminmax[i=1]
+LET amax = pminmax[i=2]
+
+GO LAS_is_range amin amax
+
+IF `($have_haxis"0|*>1") EQ 0` THEN \
+DEFINE AXIS/x=`ax_lo`:`ax_hi`:`del_ax`/units="`p,RETURN=units`" haxis 
+DEFINE AXIS/x=`ax_lo`:`ax_hi`:`del_ax`/units="`p,RETURN=units`" haxis1 
+DEFINE SYMBOL hlim = /hlim=`ax_lo`:`ax_hi`
+
+! Get the title and units from the original variables
+LET/like=xvar dep_var = x[gx=haxis]
+
+LET qminmax = MINMAX(q_var)
+LET amin = qminmax[i=1]
+LET amax = qminmax[i=2]
+GO LAS_is_range amin amax
+
+DEFINE AXIS/y=`ax_lo`:`ax_hi`:`del_ax`/units="($propunits)" vaxis 
+DEFINE SYMBOL vlim = /vlim=`ax_lo`:`ax_hi`
+
+LET/like=yvar indep_var = y[gy=vaxis]
+
+DEFINE SYMBOL axes_already_defined = 1
+
+
+IF `(($ax_label_x"0|*>1") + ($ax_label_y"0|*>1") GE 1) AND \
+      (($ferret_thumb"0|0|*>1") EQ 0)` THEN 
+   DEFINE VIEW/AXES/X=0.12:0.99/y=0.06:0.93 full_view
+   DEFINE VIEW/AXES/X=0.12:0.99/y=0.1:0.93 full_view2
+   SET VIEW full_view
+ENDIF
+
+IF ($ferret_thumb"0|0|*>1") THEN 
+   DEFINE VIEW/AXES/X=0.12:0.99/y=0.1:0.93 full_view 
+   DEFINE VIEW/AXES/X=0.12:0.99/y=0.1:0.93 full_view2 
+   SET VIEW full_view
+ENDIF
+
+! Make the plot, keeping only axis labels
+PLOT/VS($hlim)($vlim)/sym=dot/ribbon/pal=white/set xvar, yvar, xvar
+  ppl title 
+  if ($lab1"0|*>1") THEN go unlabel 1
+  if ($lab2"0|*>1") THEN go unlabel 2
+  if ($lab3"0|*>1") THEN go unlabel 3
+  if ($lab4"0|*>1") THEN go unlabel 4
+  if ($lab5"0|*>1") THEN go unlabel 5
+  if ($lab6"0|*>1") THEN go unlabel 6
+PPL RIBBON
+
+
+! compute ngood and nbad data used later in setting symbol size
+
+LET compute_good = ($xvar)* ($yvar)
+IF `($ngood_data"-10|*>1") LT 0` THEN DEFINE SYMBOL ngood_data = `compute_good[i=@ngd]`
+IF `($nbad_data"-10|*>1") LT 0` THEN DEFINE SYMBOL nbad_data = `compute_good[i=@nbd]`
+
+IF `($data_count"0") GT 2` THEN 
+   LET compute_good =  ($xvar)* ($yvar)* ($zvar)
+   IF `($ngood_data"-10|*>1") LT 0` THEN DEFINE SYMBOL ngood_data = `compute_good[i=@ngd]`
+   IF `($nbad_data"-10|*>1") LT 0` THEN DEFINE SYMBOL nbad_data = `compute_good[i=@nbd]`
+ENDIF
+
+
+DEFINE SYMBOL xvar = constraints_mask*xvar
+DEFINE SYMBOL yvar = constraints_mask*yvar
+LET p = ($xvar) 
+LET q = ($yvar)
+
+! End of file ------------ LAS_xytvar_griddat_setup.jnl--------------------------
+
+

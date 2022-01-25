@@ -1,0 +1,39 @@
+<ui:UiBinder xmlns:ui='urn:ui:com.google.gwt.uibinder'
+             xmlns:m='urn:import:gwt.material.design.client.ui'
+             xmlns:las="urn:import:pmel.sdig.las.client.widget"
+             xmlns:g='urn:import:com.google.gwt.user.client.ui'>
+    <m:MaterialPanel>
+        <m:MaterialRow>
+            <m:MaterialColumn grid="s12">
+                <m:MaterialCard backgroundColor="WHITE">
+                    <m:MaterialCardContent textColor="BLACK">
+                        <m:MaterialRow>
+                        <m:MaterialPanel grid="s9" addStyleNames="valign-wrapper">
+                            <m:MaterialIcon ui:field="titleIcon" iconType="LAUNCH" iconSize="SMALL" marginLeft="12" />
+                            <m:MaterialCardTitle lineHeight="24" ui:field="title" marginLeft="16" textColor="BLACK" text=""/>
+                        </m:MaterialPanel>
+                            <m:MaterialRow ui:field="navRow" grid="s3" float="RIGHT" display="NONE">
+                                <m:MaterialColumn grid="s3">
+                                    <m:MaterialLink ui:field="prev10" text="Prev 10"></m:MaterialLink>
+                                </m:MaterialColumn>
+                                <m:MaterialColumn grid="s3">
+                                    <m:MaterialLink ui:field="prev" text="Prev"></m:MaterialLink>
+                                </m:MaterialColumn>
+                                <m:MaterialColumn grid="s3">
+                                    <m:MaterialLink ui:field="next" text="Next"></m:MaterialLink>
+                                </m:MaterialColumn>
+                                <m:MaterialColumn grid="s3">
+                                    <m:MaterialLink ui:field="next10" text="Next 10"></m:MaterialLink>
+                                </m:MaterialColumn>
+                            </m:MaterialRow>
+                        </m:MaterialRow>
+                        <m:MaterialRow>
+                        <m:MaterialPanel ui:field="rows">
+                        </m:MaterialPanel>
+                        </m:MaterialRow>
+                    </m:MaterialCardContent>
+                </m:MaterialCard>
+            </m:MaterialColumn>
+        </m:MaterialRow>
+    </m:MaterialPanel>
+</ui:UiBinder>

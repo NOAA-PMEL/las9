@@ -1,0 +1,19 @@
+<div [formGroup]="jsonForm" margin="45px">
+  <div [ngSwitch]="property.controlType">
+    <h3 class="first">{{property.label}}</h3>
+    <span class="ui-float-label">
+      <input class="textbox-width" type="{{property.controlType}}}" size="30" pInputText [formControlName]="property.key" value="property.value">
+    </span>
+
+
+    <!--
+        <select [id]="property.key" *ngSwitchCase="'dropdown'" [formControlName]="property.key">
+          <option *ngFor="let opt of property.options" [value]="opt.key">{{opt.value}}</option>
+        </select>
+    -->
+  </div>
+
+  <!--
+  <div class="errorMessage" *ngIf="!isValid">{{question.label}} is required</div>
+  -->
+</div>

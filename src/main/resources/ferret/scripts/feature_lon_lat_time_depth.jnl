@@ -1,0 +1,11 @@
+! feature_lon_lat_time_depth.jnl
+
+! Use file attributes to find which variables correspond to
+! longitude, latitude, time in a Trajectory file
+
+! DSG-enabled Ferret: maybe we don't need these
+
+GO feature_get_direction_vars
+
+
+!---------------- end of feature_lon_lat_time_depth.jnl -------------------------

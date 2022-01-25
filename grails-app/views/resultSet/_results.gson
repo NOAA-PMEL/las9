@@ -1,0 +1,5 @@
+import pmel.sdig.las.Result
+model {
+    List<Result> results
+}
+json tmpl.result(results)

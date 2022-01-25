@@ -1,0 +1,28 @@
+! setup_date_key.jnl
+! Set up to label the color key with dates
+
+
+IF `($data_t_var"0|*>1") EQ 0` THEN 
+   MESSAGE/ERROR **ERROR color by date but date-variable not defined
+   EXIT/PROGRAM
+ENDIF 
+
+DEFINE SYMBOL shape = `($data_t_var),RETURN=shape`
+DEFINE SYMBOL indx = ($shape"0|POINT>0|X>i|Z>k|T>l|E>m*>0")
+
+IF `($indx"0|*>1") EQ 0` THEN 
+   MESSAGE/ERROR **ERROR color by date but time is just one point
+   EXIT/PROGRAM
+ENDIF
+
+GO define_dsg_taxis
+
+DEFINE SYMBOL datekey = 1
+DEFINE SYMBOL ferret_key_annotate = 0
+
+DEFINE SYMBOL datekey_time_arg = ttvar
+
+IF `($ferret_plot_levels"0|*>1") EQ 0` THEN DEFINE SYMBOL ferret_plot_levels = 50
+IF `($ferret_fill_levels"0|*>1") EQ 0` THEN DEFINE SYMBOL ferret_fill_levels = ($ferret_plot_levels)
+
+! End of script ------------ setup_date_key.jnl--------------------------

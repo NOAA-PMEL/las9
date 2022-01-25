@@ -1,0 +1,94 @@
+<ui:UiBinder xmlns:ui='urn:ui:com.google.gwt.uibinder'
+             xmlns:g='urn:import:com.google.gwt.user.client.ui'
+             xmlns:ma="urn:import:gwt.material.design.addins.client"
+             xmlns:m='urn:import:gwt.material.design.client.ui'
+             xmlns:las="urn:import:pmel.sdig.las.client.widget">
+    <m:MaterialColumn ui:field="panel" grid="s10" paddingLeft="2" paddingRight="8" shadow="2">
+        <m:MaterialCollapsible ui:field="annotationsCollapse">
+            <m:MaterialCollapsibleItem>
+
+                <m:MaterialCollapsibleHeader addStyleNames="LAS-accordian" paddingLeft="8" paddingBottom="0" marginTop="8" marginBottom="0" lineHeight="20" >
+                    <m:MaterialPanel addStyleNames="valign-wrapper">
+                        <m:MaterialPanel display="INLINE_BLOCK" ui:field="breadcrumbs" addStyleNames="valign-wrapper" grid="s11"></m:MaterialPanel>
+                        <m:MaterialIcon ui:field="trigger" iconType="EXPAND_MORE" iconSize="LARGE" iconPosition="RIGHT" iconColor="BLUE" float="RIGHT" verticalAlign="MIDDLE" grid="s1"></m:MaterialIcon>
+                    </m:MaterialPanel>
+                </m:MaterialCollapsibleHeader>
+                <m:MaterialCollapsibleBody ui:field="annotations" backgroundColor="WHITE" paddingTop="0" paddingLeft="0" paddingRight="0">
+                    <m:MaterialPanel marginTop="8" paddingLeft="8" ui:field="annotationPanel" m:id="annotations"  textAlign="LEFT" overflow="AUTO">
+                    </m:MaterialPanel>
+                </m:MaterialCollapsibleBody>
+            </m:MaterialCollapsibleItem>
+
+
+        </m:MaterialCollapsible>
+
+        <las:OutputPanel ui:field="outputPanel"></las:OutputPanel>
+
+        <m:html.Div visible="false" ui:field="chart"/>
+
+
+        <ma:window.MaterialWindow ui:field="settingsWindow" title="Panel Controls" toolbarColor="BLUE_LIGHTEN_2">
+            <m:MaterialColumn grid="s12">
+                <m:MaterialRow marginBottom="2">
+                    <m:MaterialPanel addStyleNames="valign-wrapper">
+                        <m:MaterialTextBox iconSize="LARGE" grid="s12" iconPosition="LEFT" iconType="SEARCH" iconColor="BLUE" paddingLeft="10" marginLeft="8" ui:field="txtSearch" placeholder="search terms e.g. temperature" backgroundColor="WHITE" active="true" shadow="1"/>
+                    </m:MaterialPanel>
+                </m:MaterialRow>
+                <m:MaterialCollapsible ui:field="navcollapsible" addStyleNames="LAS-collapse-headers">
+                    <m:MaterialCollapsibleItem ui:field="dataItem">
+                        <m:MaterialCollapsibleHeader debugId="panelHeaderData">
+                            <m:MaterialPanel addStyleNames="valign-wrapper">
+                                <m:MaterialIcon marginLeft="4" ui:field="panelHome" iconType="HOME"></m:MaterialIcon>
+                                <m:MaterialIcon ui:field="back" iconType="ARROW_BACK" iconPosition="RIGHT"/>
+                                <m:MaterialLink addStyleNames="panelHeader" width="319px" fontSize="1.4em" fontWeight="BOLDER" text="Data" display="FLEX"></m:MaterialLink>
+                            </m:MaterialPanel>
+                        </m:MaterialCollapsibleHeader>
+                        <m:MaterialCollapsibleBody padding="0">
+                            <m:MaterialCollection ui:field="panelDatasets"/>
+                        </m:MaterialCollapsibleBody>
+                    </m:MaterialCollapsibleItem>
+                    <m:MaterialCollapsibleItem>
+                        <m:MaterialCollapsibleHeader debugId="panelHeaderAxes">
+                            <m:MaterialLink addStyleNames="panelHeader" fontSize="1.4em" fontWeight="BOLDER" text="Axes Selections"></m:MaterialLink>
+                        </m:MaterialCollapsibleHeader>
+                        <m:MaterialCollapsibleBody padding="0">
+                            <m:MaterialPanel m:id="timeRegion" padding="2" overflow="HIDDEN" width="375px">
+                                <m:MaterialPanel padding="8" ui:field="mapPanel"></m:MaterialPanel>
+                                <m:MaterialPanel padding="8" ui:field="dateTimePanel" width="375px" grid="s12"></m:MaterialPanel>
+                                <m:MaterialPanel padding="8" ui:field="zaxisPanel" grid="s12"/>
+                            </m:MaterialPanel>
+                        </m:MaterialCollapsibleBody>
+                    </m:MaterialCollapsibleItem>
+                    <m:MaterialCollapsibleItem>
+                    <m:MaterialCollapsibleHeader debugId="panelHeaderAxes">
+                        <m:MaterialLink addStyleNames="panelHeader" fontSize="1.4em" fontWeight="BOLDER" text="Normalize Contours Between Panels"></m:MaterialLink>
+                    </m:MaterialCollapsibleHeader>
+                    <m:MaterialCollapsibleBody padding="0">
+                        <m:MaterialPanel lineHeight="32" marginBottom="8" textAlign="LEFT" overflow="AUTO">
+
+                        <m:MaterialLabel paddingBottom="8" paddingLeft="8" paddingTop="8" fontSize="1.4em" fontWeight="BOLDER" text="Make contour levels match."></m:MaterialLabel>
+                        <m:MaterialPanel paddingLeft="8" ui:field="autoColorsPanel" addStyleNames="valign-wrapper">
+                            <m:MaterialCheckBox ui:field="useAutoColors"></m:MaterialCheckBox>
+                            <m:MaterialTextBox ui:field="autocolors" placeholder="(min, max, levels)" ></m:MaterialTextBox>
+                        </m:MaterialPanel>
+                        </m:MaterialPanel>
+                    </m:MaterialCollapsibleBody>
+                    </m:MaterialCollapsibleItem>
+                    <m:MaterialCollapsibleItem>
+                        <m:MaterialCollapsibleHeader debugId="panelHeaderAxes">
+                            <m:MaterialLink addStyleNames="panelHeader" fontSize="1.4em" fontWeight="BOLDER" text="Differences"></m:MaterialLink>
+                        </m:MaterialCollapsibleHeader>
+                        <m:MaterialCollapsibleBody padding="0">
+
+                            <m:MaterialLabel paddingBottom="8" paddingLeft="8" paddingTop="8" fontSize="1.4em" fontWeight="BOLDER" text="Compute Difference"></m:MaterialLabel>
+                            <m:MaterialSwitch verticalAlign="MIDDLE" ui:field="difference" display="INLINE" paddingBottom="8" paddingLeft="8" paddingRight="8" title="Turn on difference calculation when viewing multiple plots." onLabel="Difference On" offLabel="Difference Off" enabled="false" value="false" />
+
+                        </m:MaterialCollapsibleBody>
+                    </m:MaterialCollapsibleItem>
+                </m:MaterialCollapsible>
+            </m:MaterialColumn>
+        </ma:window.MaterialWindow>
+
+    </m:MaterialColumn>
+
+</ui:UiBinder>

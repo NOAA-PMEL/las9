@@ -1,0 +1,24 @@
+! setup_dsg_variables.jnl
+!
+! Reworking for DSG-enabled Ferret
+
+! set npts
+
+LET npts = ($numobs)
+
+! Need this?  Previuosly the script toyed with this logic:
+! If the Ferret property traj_discrete has been set, check whether the 
+! distance between points is large; if so plot as discrete points connected
+! with a thin line.
+
+
+! Check data type
+
+LET gettype = ($data_var)
+DEFINE SYMBOL vtype = `gettype,RETURN=dtype`
+DEFINE SYMBOL is_string = ($vtype"0|CHAR>1|*>0")
+
+
+! End of file ------------ setup_dsg_variables.jnl--------------------------
+
+

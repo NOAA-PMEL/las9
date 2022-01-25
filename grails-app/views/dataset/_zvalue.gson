@@ -1,0 +1,6 @@
+import pmel.sdig.las.Zvalue
+
+model {
+  Zvalue zvalue
+}
+json g.render(zvalue)

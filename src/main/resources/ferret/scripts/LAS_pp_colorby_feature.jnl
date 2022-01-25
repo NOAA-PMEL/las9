@@ -1,0 +1,220 @@
+
+! LAS_pp_colorby_feature.jnl
+! Draw the correlation plot with icons colored by feature ID.
+
+! Create the 'feature' variables and symbols
+! Create a new title that includes subsampling info
+
+! Restart setting plot qualifiers for correlation plot. 
+!
+! 4/2019 redo for DSG datasets.  The feature-mask if any is already
+!        applied to the dataset.
+
+DEFINE SYMBOL qualifiers = /NOLAB
+
+DEFINE SYMBOL py_syms = `($program_name"0|PyFerret>1|*>0") AND ($FERRET_VERSION) GE 7.32`
+
+IF `($data_1_var"0|*>1") EQ 0` THEN
+  MESSAGE/ERROR **ERROR Correlation product requires two variables to be selected
+  EXIT/PROGRAM
+ENDIF
+
+
+let nmasked_var = XSEQUENCE(constraints_mask)
+LET n_in_mask = nmasked_var[i=@ngd]
+
+IF `n_in_mask eq 0` THEN 
+  DEFINE SYMBOL put_label = 1 
+  EXIT/SCRIPT
+ENDIF
+
+
+LET idvar = constraints_mask* ($feature_variable)
+
+LET p = constraints_mask* (xvar)
+LET q = constraints_mask* (yvar)
+
+! Set up to make polygon plot. If there are not too many features
+! color the data according to feature.
+
+DEFINE SYMBOL qualifiers = ($qualifiers)/NOAXES/NOKEY/NOLAB/OVER
+
+
+! /VS/RIBBON/OVER/PALETTE=ten_by_levels/THICK/SYM=19/NOLAB
+
+IF `($features_shown) LE ($feature_max_labels)` THEN
+   DEFINE SYMBOL ferret_poly_palette = ten_by_levels
+   DEFINE SYMBOL qualifiers = ($qualifiers)/PALETTE=($ferret_poly_palette)
+
+! If undefined, set polygon scale according to number of points
+   IF `($ferret_poly_scale"1|*>0") AND ($py_syms"0")` THEN 
+      GO LAS_set_poly_scale
+      DEFINE SYMBOL ferret_poly_scale 0.5*($ferret_poly_scale)
+   ENDIF
+   
+   DEFINE SYMBOL qualifiers = ($qualifiers)/LINE/THICK=1
+
+ELSE
+   DEFINE SYMBOL qualifiers = ($qualifiers)/PALETTE=black
+   DEFINE SYMBOL poly_scale = 0.4
+   DEFINE SYMBOL plot_using_sym = 1 
+ENDIF
+
+DEFINE SYMBOL poly_command POLY/FILL($qualifiers)
+
+DEFINE SYMBOL line_color = blue
+
+DEFINE SYMBOL pysym_command = PLOT/VS/NOLAB/NOKEY/ribbon/highlight/PALETTE=($ferret_poly_palette)/siz=0.15/OVER
+DEFINE SYMBOL fersym_command = PLOT/VS/NOLAB/NOKEY/ribbon/miss=blank/PALETTE=($ferret_poly_palette)/siz=0.15/THICK/OVER
+
+! Start the plot. Draw an underlay of dashed-line plot for time series and map trajctory plots
+
+
+IF `itsa_tim_prop` THEN
+   LET tmin = p[L=@min]
+   LET tmax = p[L=@max]
+   LET t1 = `tmin[e=@min]`
+   LET t2 = `tmax[e=@max]`
+ENDIF
+
+IF `( ($features_shown) LE ($feature_max_labels) ) AND ( ($DATA_COUNT) eq 3 )` THEN
+
+   set data/fmask=subset_mask 1
+   PPL COLOR,6,90,90,90  !gray
+
+   IF `itsa_tim_prop EQ 0 AND itsa_map_plot EQ 0` THEN \
+      PLOT/VS/SYM=dot($hlim)($vlim)/RIBBON/NOKEY/NOLAB/PALETTE=white {0,1}, {0,1}, {0,1}  ! underlay to draw the axes... (Need /hlim, /vlim for expanded axes?)
+
+   IF `itsa_tim_prop AND ($connect_dots"0|0|1|*>1")` THEN \
+     PLOT/t=`t1`:`t2`/NOLAB/DASH=(0.1,0.04,0.1,0.04)/color=6 q
+
+   IF `itsa_map_plot AND ($connect_dots"0|0|1|*>1")` THEN \
+     PLOT/OVER/NOLAB/VS/RIBBON/DASH=(0.1,0.04,0.1,0.04)/pal=gray p,q, 0*q
+
+   PPL COLOR,6,100,0,100  !restore default line-6 color
+
+   CANCEL SYMBOL connect_dots
+
+   IF ($ax_label_x"0|*>1") THEN annotate/norm/halign=0/xp=0.5/yp=-0.06/siz=0.12 "($ax_label_x)"
+   IF ($ax_label_y"0|*>1") THEN annotate/norm/halign=0/angle=90/xp=-0.06/yp=0.5/siz=0.12 "($ax_label_y)"
+
+   ! Use different color for each feature 1-10, 11-21, ...
+   ! Use different symbols for each set of 10
+
+   LET ncolors = 10
+   LET nshapes = 20
+   LET polygon_set = `INT(0.5+($features_shown)/nshapes)`
+   IF `polygon_set*nshapes LT ($features_shown)`  THEN LET polygon_set = `polygon_set+1`
+
+! See polyshape script for the list of available pre-defined shapes.
+
+! Set the shapes with the same script as in the script 200symbols.jnl
+! Also sets the names of PyFerret symbols to match those shapes.
+
+   GO LAS_pp_set_feature_shapes
+
+   LET cmax = `MIN(nfeatures,ncolors)`
+   LET c1 = 1
+!   DEFINE SYMBOL poly_command ($poly_command)/LEVELS=(`c1`,`cmax+1`,1)
+!   DEFINE SYMBOL fersym_command ($fersym_command)/LEVELS=(`c1`,`cmax+1`,1)
+!   DEFINE SYMBOL pysym_command ($pysym_command)/LEVELS=(`c1`,`cmax+1`,1)
+
+   LET ishape = 1
+   LET icolor = 1
+
+   LET cvar = MOD(_m[ge=($rowvar)],`ncolors`)  ! cycle through avail colors
+
+   LET c1 = 1
+   LET cn = MIN(ncolors, nfeatures)
+
+! PyFerret will use the fancy PLOT symbols. 
+! Note need to protect the colors from one set of 10 to the next
+
+   LET idvar = EXPND_BY_LEN (_m[ge=($feature_variable)], ($rowvar), ($numobs))
+   LET ids_on_obs = RESHAPE (idvar, ($xvar))
+      
+   LET xplt_var = XSEQUENCE(($xvar))
+   LET yplt_var = XSEQUENCE(($yvar))
+   LET zplt_var = XSEQUENCE(ids_on_obs)
+
+   LET xplt_var = ($xvar)
+   LET yplt_var = ($yvar)
+   LET zplt_var = ($zvar)
+
+   DEFINE SYMBOL plot_arg = xplt_var, yplt_var, zplt_var
+
+   LET ishape = 1
+   LET icolor = 1
+
+   LET cvar = MOD(_m[ge=($rowvar)],`ncolors`)  ! cycle through avail colors
+
+   LET c1 = 1
+   LET cn = MIN(ncolors, nfeatures)
+
+   CANCEL data/fmask 1
+   LET mmask = _M[ge=rowsize] 
+
+   REPEAT/RANGE=1:`nfeatures`:`ncolors`/NAME=ic (\
+    DEFINE SYMBOL ishape = `ishape`;\
+    CANCEL data/fmask 1;\
+    LET ishape_mask = if mmask ge c1 and mmask le cn then 1;\
+    LET mask_for_shape = subset_mask* mmask* ishape_mask;\
+    SET DATA/fmask=mask_for_shape 1;\
+     ;\
+     DEFINE SYMBOL color_command = GO polymark ($poly_command)/LEVELS=(`c1`,`cn+1`,1) ($plot_arg), ($shape($ishape)), ($poly_scale) ;\
+     IF ($py_syms"0") THEN DEFINE SYMBOL color_command = ($pysym_command)/sym=($pyshape($ishape))/E=`c1`:`cn`/LEVELS=(`c1`,`cn+1`,1) ($plot_arg);\
+     ;\
+     ($color_command); \
+     ;\
+     LET c1 = `c1 + ncolors`;\
+     LET cn = `cn + ncolors`;\
+     IF `cn GT nfeatures` THEN LET cn = `nfeatures`;\
+     LET ishape = `ishape+1`;\
+     PPL shaset protect;\
+     )
+
+    CANCEL DATA/FMASK 1
+    SET DATA/FMASK = subset_mask 1
+
+ELSE ! all features, do as a PLOT not a POLY command, much faster
+
+   PLOT/VS/NOLAB/over/sym=19/siz=.12 p,q
+   DEFINE SYMBOL ngood_data = `p[i=@ngd]`
+ENDIF
+
+! If location(s) of a crossover has been sent, mark them.
+! This might be one point, or two, comma-separated.
+
+! Do the check this way because the ferret_crossover symbols may contain
+! a list of numbers, not just a single value.
+DEFINE SYMBOL crossover = "($ferret_crossover_lat%nothing%)" 
+IF `STRCMP(($crossover), "nothing") NE 0` THEN 
+   LET crosslon1 = {($ferret_crossover_lon)}
+   LET crosslon2 = IF crosslon1 LT ($xaxis_min) THEN crosslon1 + 360 ELSE crosslon1
+   LET cross_lon = IF crosslon2 GT ($xaxis_max) THEN crosslon2 - 360 ELSE crosslon2
+   LET cross_lat = {($ferret_crossover_lat)}
+   DEFINE SYMBOL cross_sym_siz = 0.2
+
+! Diamond inside a square
+!   PLOT/VS/OVER/NOKEY/SYM=30/siz=($cross_sym_siz)/color=12 `cross_lon`,`cross_lat`
+!   PLOT/VS/OVER/NOKEY/SYM=18/siz=`($cross_sym_siz)*1.2`/color=9 `cross_lon`,`cross_lat`
+
+! Or an arrow pointing up at the spot.
+!   LET cross_lat_lower = `cross_lat - ($cross_sym_siz)/(($ppl$ylen)/(($yaxis_max)-($yaxis_min)))`
+!   PLOT/VS/OVER/NOKEY/SYM=46/siz=`($cross_sym_siz)*1.5`/color=13 `cross_lon`,`cross_lat_lower`
+!   PLOT/VS/OVER/NOKEY/SYM=46/siz=`($cross_sym_siz)*1.2`/color=9 `cross_lon`,`cross_lat_lower`
+!   PLOT/VS/OVER/NOKEY/SYM=27/siz=0.08/color=3 `cross_lon`,`cross_lat`
+
+! Or a small circle inside a large one, green
+!   PLOT/VS/OVER/NOKEY/SYM=27/siz=0.04/color=3 cross_lon, cross_lat
+!   PLOT/VS/OVER/NOKEY/SYM=27/siz=0.28/color=9 cross_lon, cross_lat
+
+   
+! Or a light-blue fill inside a black circle
+   PLOT/VS/OVER/NOKEY/SYM=21/siz=0.26/color=LightBlue/thick=2 cross_lon, cross_lat
+   PLOT/VS/OVER/NOKEY/SYM=27/siz=0.26/color=LightBlue/thick=2 cross_lon, cross_lat
+ENDIF
+
+DEFINE SYMBOL nout_lonlat = ($ngood_data)
+
+! End of file ------------ LAS_pp_colorby_feature.jnl--------------------------

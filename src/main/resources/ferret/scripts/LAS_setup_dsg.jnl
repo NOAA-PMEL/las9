@@ -1,0 +1,109 @@
+! LAS_setup_dsg.jnl
+! 4/3/2017 *acm* Additions for point data types
+
+SAY _________________ START LAS_setup_dsg: clock seconds:                        ($clock_secs)
+
+LET global_attnames = ..attnames
+LET varnames = ..varnames
+LET nvars = ..nvars
+
+
+!
+! Is it a Profile or Timeseries or Trajectory dataset?
+! Find the featureType attribute, and find which  variables
+! are marked with the cf_role and sample_dimension attributes
+
+! Have we already found these?
+IF `( ($feature_variable"0|*>1") GT 0) AND ( ($rowvar"0|*>1") GT 0)` THEN EXIT/SCRIPT
+
+IF `IS_ELEMENT_OF_STR_N(global_attnames, "featureType") ` THEN
+    DEFINE SYMBOL feature_type = `..featureType`
+    IF ($ferret_feature_label"0|*>1") THEN DEFINE SYMBOL feature_type = ($ferret_feature_label)
+    DEFINE SYMBOL feature_type = `DNCASE("($feature_type)")`
+ENDIF
+
+! cf_role and sample_dimension are not included in DSG point datasets.
+! rowsize isn't either. Set one up which is 1 for each point
+
+IF ($feature_type"0|point>1|*>0") THEN 
+
+   LET nfeatures = `($data_var),RETURN=size`
+   DEFINE SYMBOL nfeatures =`nfeatures`
+   IF ($data_0_x_var"0|*>1") THEN DEFINE SYMBOL data_x_var = ($data_0_x_var)
+   IF ($data_0_y_var"0|*>1") THEN DEFINE SYMBOL data_y_var = ($data_0_y_var)
+
+! Define an E-direction "rowsize" variable that's 1 for each point
+
+   LET getshape = '($data_0_var)'
+   DEFINE SYMBOL shape = `getshape,RETURN=shape`
+   IF ($shape"point>1|*>0") THEN
+      LET rowvar = 1
+   ELSE
+      DEFINE SYMBOL ishape = ($shape"|X>i|Y>j|Z>k|T>l|E>m|F>n")
+      LET npts = `($data_0_var),return=($ishape)size`
+      LET rowvar = 1 + 0* _e[e=1:`npts`]
+   ENDIF
+   DEFINE SYMBOL rowvar = rowvar
+
+   EXIT/SCRIPT
+ENDIF
+
+! Find the variable with the cf_role attribute. It's the feature-id var.
+! Also mark the direction variables and find the rowSize variable.
+
+REPEAT/RANGE=1:`nvars`/name=q (\
+   DEF SYM q = `q`;\
+   DEF SYM vname = `varnames[i=($q)]`;\
+   GO dsg_find_roles;\
+   IF `STRCMP("($data_($num)_var)", "($feature_variable)") EQ 0` THEN \
+   DEFINE SYMBOL ferret_plot_title = ($feature_variable) ID;\
+)
+
+
+! is cf_role on a coordinate variable? 
+! If so define a new variable containing the coordinates 
+! and redefine the  color-by variable definition if it's color-by-id.
+
+IF `($feature_variable"0|*>1") EQ 0` THEN
+   LET ndims = ..ndims
+   LET dimnames = ..dimnames
+   
+   REPEAT/RANGE=1:`ndims`/name=q (\
+      DEF SYM q = `q`;\
+      DEF SYM dimname = `dimnames[i=($q)]`;\
+      DEF SYM vname = (`dimnames[i=($q)]`);\
+      GO dsg_find_roles;\
+      IF ($feature_variable"0|*>1") THEN ;\
+      DEFINE SYMBOL id_on_dim = ($vname);\
+      exit/loop; \
+      ENDIF; \
+      )
+   IF `($id_on_dim%0|*>1%) AND \
+       STRINDEX( "($feature_variable%0%)", "($dimname)" ) GT 0` THEN \
+       DEFINE SYMBOL feature_variable = ($dimname)
+
+ENDIF
+
+
+! We now have all of these settings for the dataset
+
+LET nfeatures = `($feature_variable),RETURN=msize`
+DEFINE SYMBOL nfeatures =`nfeatures`
+
+! Rowsize variable directions
+
+DEFINE SYMBOL rdir = `($rowvar),RETURN=shape` 
+DEFINE SYMBOL rind = ($rdir"|X>I|E>M|POINT>M")
+
+DEFINE SYMBOL vshape = `($data_var),RETURN=shape`
+LET color_by_index = `($vshape"0|E>1|*>0)`
+LET color_by_feature = `STRCMP("($data_var)", "($feature_variable)") EQ 0`
+
+SHOW SYMBOL numobs
+SHOW SYMBOL dsgshape
+SHOW SYMBOL dsgshape_var
+ 
+! End of file ------------ LAS_setup_dsg.jnl--------------------------
+
+SAY _________________ END LAS_setup_dsg: clock seconds:                          ($clock_secs)
+!`

@@ -1,0 +1,3 @@
+# Module pmel.sdig.las.UI
+# RPC service class, partial path of RPC policy file
+com.google.gwt.logging.shared.RemoteLoggingService, 36BBD0D9359A6F37767BF55CAA20EA4F.gwt.rpc

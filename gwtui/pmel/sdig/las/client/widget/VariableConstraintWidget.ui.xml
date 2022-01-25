@@ -1,0 +1,31 @@
+<ui:UiBinder xmlns:ui='urn:ui:com.google.gwt.uibinder'
+             xmlns:m='urn:import:gwt.material.design.client.ui'
+             xmlns:g='urn:import:com.google.gwt.user.client.ui'>
+    <m:MaterialPanel>
+        <m:MaterialRow>
+            <m:MaterialPanel addStyleNames="valign-wrapper">
+                <m:MaterialColumn grid="s1">
+                    <m:MaterialIcon paddingTop="16" ui:field="remove" display="NONE" iconType="CLOSE" iconColor="RED"></m:MaterialIcon>
+                </m:MaterialColumn>
+                <m:MaterialColumn grid="s2">
+                    <m:MaterialSwitch paddingTop="16" ui:field="active"></m:MaterialSwitch>
+                </m:MaterialColumn>
+                <m:MaterialColumn grid="s2">
+                    <m:MaterialTextBox textAlign="CENTER" verticalAlign="MIDDLE" ui:field="lo"></m:MaterialTextBox>
+                </m:MaterialColumn>
+                <m:MaterialColumn grid="s1">
+                    <m:MaterialLabel text="&lt;="/>
+                </m:MaterialColumn>
+                <m:MaterialColumn grid="s3">
+                    <m:MaterialLabel paddingTop="16" ui:field="name"></m:MaterialLabel>
+                </m:MaterialColumn>
+                <m:MaterialColumn grid="s1">
+                    <m:MaterialLabel text="&lt;="/>
+                </m:MaterialColumn>
+                <m:MaterialColumn grid="s2">
+                    <m:MaterialTextBox textAlign="CENTER" verticalAlign="MIDDLE" ui:field="hi"></m:MaterialTextBox>
+                </m:MaterialColumn>
+            </m:MaterialPanel>
+        </m:MaterialRow>
+    </m:MaterialPanel>
+</ui:UiBinder>

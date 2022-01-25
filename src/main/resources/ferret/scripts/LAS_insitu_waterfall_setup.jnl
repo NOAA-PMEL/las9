@@ -1,0 +1,135 @@
+!!!!! LAS_insitu_waterfall_setup.jnl
+
+! Initialize the dataset and set up for profile plots from DSG 
+! datasets using native-DSG enabled Ferret. 
+
+GO LAS_initialize_region 0
+
+IF ($data_0_var"0|vid>1|*>0")  THEN
+   DEFINE SYMBOL  ferret_by_id = 1
+   USE "($data_0_url)"
+   LET varnames = ..varnames
+
+   DEFINE SYMBOL  data_0_var = `varnames[i=1]`
+   CANCEL DATA "($data_0_url)"
+ENDIF
+GO LAS_initialize_data 0
+
+! Check for errors (They often occur during dataset initialization.)
+
+IF ($error_status"0|*>1") THEN
+  MESSAGE/ERROR **ERROR ($error_string)
+  EXIT/PROGRAM
+ENDIF
+
+! Find the xyzt variables 
+
+GO feature_get_direction_vars
+
+! Set the URL label for the first dataset.
+GO LAS_url_label 0
+
+! Range for z variable
+
+LET ntic = 10
+PPL %range ($region_z_lo),  ($region_z_hi), `ntic`
+LET dlo = ($ppl$range_low)
+LET dhi = ($ppl$range_high)
+
+DEFINE AXIS/z=`dlo`:`dhi`/depth/npoints=100 vaxis
+
+! Are the depths positive or negative
+
+DEFINE SYMBOL shape = `($data_z_var),RETURN=shape`
+DEFINE SYMBOL indx = ($shape"0|POINT>0|X>i|Z>k|T>l|E>m|*>0")
+
+LET z1 = ($data_z_var)[($indx)=@MIN]
+LET z2 = ($data_z_var)[($indx)=@MAX]
+
+IF ($indx"|m>0|*>1") THEN
+   LET zmin = `z1[e=@min]`
+   LET zmax = `z2[e=@max]`
+ELSE
+   LET zmin = `z1`
+   LET zmax = `z2`
+ENDIF
+
+IF `zmin GT zmax` THEN 
+  PPL %range `zmax`, `zmin`, `ntic`
+  DEFINE SYMBOL vlim = /vlim=($ppl$range_high):($ppl$range_low)
+  DEFINE SYMBOL AX_VERT_POSTV = down  ! For LAS_results
+ELSE
+   PPL %range `zmin`, `zmax`, `ntic`
+   DEFINE SYMBOL vlim = /vlim=($ppl$range_low):($ppl$range_high)
+ENDIF
+
+! Create the profile variables and symbols
+
+DEFINE SYMBOL variable_lab = ($variable_lab) at depth (meters)
+
+! Set up to color by a feature-variable including possibly time
+
+IF `color_by_feature EQ 1 OR color_by_index EQ 1` THEN 
+   IF ($data_var"0|($data_t_var)>1|*>0") THEN DEFINE SYMBOL ferret_plot_key = date_key
+   IF `($data_var"0|($data_t_var)>1|*>0") EQ 0` THEN 
+      IF `($ferret_palette"0|*>1") EQ 0` THEN DEFINE SYMBOL ferret_palette = ten_by_levels
+      IF `($input_fill_levels"0|*>1") EQ 0` THEN DEFINE SYMBOL ferret_fill_levels = (1,($nfeatures),1)
+      DEFINE SYMBOL ferret_plot_title Colored by Profile Number
+   ENDIF 
+   GO LAS_initialize_feature_id
+ENDIF
+
+! Special color-by-time key
+IF ($ferret_plot_key"0|date_key>1|*>0") THEN GO setup_date_key.jnl 
+
+
+! For annotations in LAS_results.  If we are coloring by a
+! feature-variable then ngood = npts
+
+DEFINE SYMBOL shape = `($data_var),RETURN=shape`
+IF ($shape"0|E>1|*>0") THEN 
+   DEFINE SYMBOL ngood_data = ($numobs)
+ELSE 
+   LET allgood = ($data_var)[($shape"x")=@ngd]
+   DEFINE SYMBOL ngood_data = `allgood[e=@sum]`
+   DEFINE SYMBOL nbad_data = `($numobs) - ($ngood_data)`
+ENDIF
+
+! Plot qualifiers (graticule lines etc)
+GO LAS_set_plot_qualifiers 
+
+! Open the window
+GO LAS_open_window
+
+! Turn on annotate_key, which persists until turned off
+! (unless key_annoatate property tells us otherwise).
+
+IF ($ferret_key_annotate"1|0|1|*>1") THEN
+   KEYMARK 1
+ELSE
+   KEYMARK 0
+ENDIF
+
+IF `($ribbon"1|0|1|*>1") AND ($ngood_data"0|0|*>1") GT 0`  THEN
+   DEFINE SYMBOL  qualifiers = ($qualifiers)/KEY
+ELSE
+   DEFINE SYMBOL  qualifiers = ($qualifiers)/NOKEY
+ENDIF
+
+DEFINE SYMBOL qualifiers = ($qualifiers)/LEVELS=($ferret_fill_levels"v")
+
+IF ($ribbon"0|*>1") THEN \
+   DEFINE SYMBOL  plot_command = PLOT/VS/RIBBON/LINE($qualifiers)
+
+! Variables for the waterfall plots  ($data_var) , ($data_x_var), ($data_y_var), ($data_z_var), ($data_t_var)
+! ... apply masks here?
+!
+! LET/TITLE="Depth"/UNITS="m"  issurf =    ! Surface locations ... should be location x,y first element of each profile...
+
+DEFINE VIEWPORT/XLIM=0:1/YLIM=0:1 vfull1
+DEFINE VIEWPORT/XLIM=0:1/YLIM=0:1 vfull2
+
+DEFINE SYMBOL view1 = vfull1
+DEFINE SYMBOL view2 = vfull2
+! End of file ------------ LAS_insitu_waterfall_setup.jnl--------------------------
+

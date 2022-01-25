@@ -1,0 +1,54 @@
+! DSG_find_roles.jnl
+! Find the feature-id variable
+! Identify the direction variables (lon/lat needed in trajectory-plot script).
+!
+! 2/2019 redo for DSG-enabled Ferret
+
+LET var_attnames = ($vname).attnames
+IF `IS_ELEMENT_OF_STR(var_attnames, "cf_role")` THEN 
+   DEFINE SYMBOL feature_variable = ($vname)
+ENDIF
+
+IF `IS_ELEMENT_OF_STR(var_attnames, "sample_dimension")` THEN 
+   DEFINE SYMBOL rowvar = ($vname)
+
+ENDIF
+
+IF `IS_ELEMENT_OF_STR(var_attnames, "axis")` THEN 
+   DEFINE SYMBOL adir = `($vname).axis`
+   IF ($adir"0|X>1|*>0") THEN 
+      DEFINE SYMBOL data_x_var = ($vname)
+      DEFINE SYMBOL dsg_x_var = ($vname)
+   ENDIF
+   IF ($adir"0|Y>1|*>0") THEN 
+      DEFINE SYMBOL data_y_var = ($vname)
+      DEFINE SYMBOL dsg_y_var = ($vname)
+   ENDIF
+   IF ($adir"0|Z>1|*>0") THEN 
+      DEFINE SYMBOL data_z_var = ($vname)
+      DEFINE SYMBOL dsg_z_var = ($vname)
+   ENDIF
+   IF ($adir"0|T>1|*>0") THEN 
+      DEFINE SYMBOL data_t_var = ($vname)
+      DEFINE SYMBOL dsg_t_var = ($vname)
+   ENDIF
+
+ENDIF
+
+! Put the name in quotes in case it's a pseudo-var such as K
+LET getshape = '($vname)'
+IF `STRINDEX("($vname)", "(") GT 0` THEN LET getshape = ($vname)
+
+DEFINE SYMBOL shape = `getshape,RETURN=shape`
+IF ($shape"0|E>0|POINT>0|*>1") THEN
+   DEFINE SYMBOL ishape = ($shape"|X>i|Y>j|Z>k|T>l|*>nothing")
+   IF ($ishape"nothing>1|*>0") THEN 
+      MESSAGE/ERROR **ERROR analyzing Distributed Sampling Geometries dataset, grid of ($vname)
+      EXIT/PROGRAM
+   ENDIF
+   DEFINE SYMBOL numobs = `'($vname)',RETURN=($ishape)size`
+   DEFINE SYMBOL dsgshape_var = ($vname)  ! a variable on the obs axis
+   DEFINE SYMBOL dsgshape = `'($vname)',RETURN=shape`
+ENDIF
+
+!---------------- end of DSG_find_roles.jnl -------------------------

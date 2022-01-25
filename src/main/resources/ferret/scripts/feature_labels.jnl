@@ -1,0 +1,89 @@
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! $Header$
+! feature_labels.jnl
+!
+! Add to annotations the upper right with number of trajectories or profiles
+! and number of valid and missing points shown.
+! On prop-prop plots, don't show missing. The count of missing-values in the
+! data is not distinguishable from the missing data due to applying constraints. 
+
+! If it is not a feature-type dataset, exit
+
+IF `($feature_type"0|*>1") EQ 0` THEN EXIT/SCRIPT
+
+
+IF ($feature_type"0|point>1|*>0") THEN
+   DEFINE SYMBOL note_num = `($note_num"0") + 1`
+   DEFINE SYMBOL note_($note_num)_lab = ($ngood_data) points shown 
+   DEFINE SYMBOL plusmissing = (($nbad_data) missing)
+   IF ($nbad_data"0|0|*>1") THEN  DEFINE SYMBOL note_($note_num)_lab = ($note_($note_num)_lab) ($plusmissing)
+   EXIT/SCRIPT
+ENDIF
+
+! ($ngood_data) and perhaps ($nbad_data) have already been computed.
+
+
+IF `($prof_traj_shown"0|*>1") EQ 0` THEN DEFINE SYMBOL prof_traj_shown = ($nfeatures)
+
+IF `($have_feature_mask"0|*>1") EQ 0` THEN
+   DEFINE SYMBOL maskdir =  `feature_mask,RETURN=shape`
+   IF ($maskdir"0|POINT>1|*>0") THEN 
+      DEFINE SYMBOL prof_traj_shown = 1
+   ELSE
+      IF `($prof_traj_shown) EQ ($nfeatures)` THEN DEFINE SYMBOL prof_traj_shown = `feature_mask[($maskdir)=@sum]`
+   ENDIF
+ENDIF
+
+! c_s used to add plural s to a label if more than one trajectory or profile.
+CANCEL SYMBOL c_s
+IF `($prof_traj_shown"0") GT 1` THEN DEFINE SYMBOL c_s = s
+LET slen = STRLEN("($feature_type)")
+IF `slen EQ STRRINDEX("($feature_type)", "s")` THEN CANCEL SYMBOL c_s
+
+IF `($c_s"0|*>1") AND ($feature_type"0|trajectory>1|*>0")` THEN\
+ DEFINE SYMBOL feature_type = trajectorie
+
+DEFINE SYMBOL note_num = `($note_num"0") + 1`
+IF ($its_profile_map"0|*>1") THEN
+   DEFINE SYMBOL note_($note_num)_lab =  ($prof_traj_shown) ($feature_type)($c_s) locations shown
+ELSE
+   DEFINE SYMBOL note_($note_num)_lab =  ($prof_traj_shown) ($feature_type)($c_s), ($ngood_data) points shown 
+ENDIF
+
+IF `(($its_prop_plot"0|0|1|*>1") EQ 0) AND ($nbad_data"0|0|*>1")` THEN 
+   IF `($ngood_data) NE 0` THEN DEFINE SYMBOL plusmissing = (plus ($nbad_data) missing)
+   IF `($ngood_data) EQ 0` THEN DEFINE SYMBOL plusmissing = (($nbad_data) missing)
+   IF ($its_profile_map"0|*>1") THEN
+      DEFINE SYMBOL note_($note_num)_lab = ($prof_traj_shown) ($feature_type)($c_s) locations shown
+   ELSE
+      DEFINE SYMBOL note_($note_num)_lab = ($prof_traj_shown) ($feature_type)($c_s), ($ngood_data) points shown ($plusmissing)
+   ENDIF
+ENDIF
+
+! If the constraint was where the color variable is valid, then no need for (0 missing)
+
+IF ($its_profile_map"0|*>1") THEN
+   IF `($has_missing"0|0>1|*>0") AND ($nbad_data"1|0>1|*>0")` THEN \
+    DEFINE SYMBOL note_($note_num)_lab = ($prof_traj_shown) ($feature_type)($c_s) locations shown
+ELSE
+   IF `($has_missing"0|0>1|*>0") AND ($nbad_data"1|0>1|*>0")` THEN \
+    DEFINE SYMBOL note_($note_num)_lab = ($prof_traj_shown) ($feature_type)($c_s), ($ngood_data) points shown
+ENDIF
+
+
+IF ($first_feature_only"0|*>1") THEN  
+   DEFINE SYMBOL prof_traj_shown = 1
+   DEFINE SYMBOL note_($note_num)_lab =  ($prof_traj_shown) ($feature_type), ID is ($first_feature_id)
+ELSE
+
+
+! Notation about the decimation (if data is pre-decimated)
+   DEFINE SYMBOL nolabels_decimation_counts = 1
+
+   IF `($piecewise_decimation"0|*>1") AND ($ngood_data) GT 0` THEN GO decimation_labels
+
+ENDIF! first_feature_only
+
+
+
+!---------------- end of feature_labels.jnl -------------------------

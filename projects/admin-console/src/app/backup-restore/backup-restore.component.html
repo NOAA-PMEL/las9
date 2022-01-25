@@ -1,0 +1,34 @@
+<div class="ui-g">
+  <div class="ui-g-2">
+    <p-card [header]="bheader" [subheader]="bsubHeader">
+      <button label="Backup Dataset Configuration" pButton class="ui-button-success" type="button" icon="pi pi-disk" iconPos="left" (click)="backup()"></button>
+    </p-card>
+  </div>
+  <div class="ui-g-10">
+    <p-card [header]="header" [subheader]="subHeader">
+      <p-scrollPanel [style]="{width: '100%', height: '200px'}">
+        <div *ngIf="backups.length > 0;else nobackups">
+          <div *ngFor="let backup of backups">
+            <div class="ui-g-10" style="padding: 0px">
+              <div *ngIf="backup.highlight;else nohi">
+                <button pButton class="wide-button ui-button-success" label="{{backup.directory}}"></button>
+              </div>
+              <ng-template #nohi>
+                <button pButton class="wide-button ui-button-secondary" label="{{backup.directory}}"></button>
+              </ng-template>
+            </div>
+            <div class="ui-g-1" style="padding: 0px">
+              <button label="Restore" pButton class="ui-button-warning" type="button" icon="pi pi-pencil" iconPos="left" (click)="restore(backup)"></button>
+            </div>
+            <div class="ui-g-1" style="padding: 0px">
+              <button label="Delete" pButton class="ui-button-danger" type="button" icon="pi pi-trashcan" iconPos="left" (click)="delete(backup)"></button>
+            </div>
+          </div>
+        </div>
+        <ng-template #nobackups>
+          No backups found on the server. Push the green button to create one.
+        </ng-template>
+      </p-scrollPanel>
+    </p-card>
+  </div>
+</div>

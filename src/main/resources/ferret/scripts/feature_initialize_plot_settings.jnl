@@ -1,0 +1,44 @@
+! feature_initialize_plot_settings.jnl
+!
+! plot settings such as color palettes that are defined on startup
+! and which may be reset later.
+
+! Is there a custom palette?  This may be reset in custom_dataset_definitions.jnl below
+
+IF `($ferret_insitu_palette"0|*>1")` THEN DEFINE SYMBOL ferret_palette =  ($ferret_insitu_palette)
+IF `($ferret_Point_palette"0|*>1")` THEN DEFINE SYMBOL ferret_palette =  ($ferret_Point_palette)
+IF `($ferret_Profile_palette"0|*>1")` THEN DEFINE SYMBOL ferret_palette =  ($ferret_Profile_palette)
+IF `($ferret_Timeseries_palette"0|*>1")` THEN DEFINE SYMBOL ferret_palette =  ($ferret_Timeseries_palette)
+IF `($ferret_TrajectoryProfile_palette"0|*>1")` THEN DEFINE SYMBOL ferret_palette =  ($ferret_TrajectoryProfile_palette)
+IF `($ferret_Trajectory_palette"0|*>1")` THEN DEFINE SYMBOL ferret_palette =  ($ferret_Trajectory_palette)
+
+
+! Mark whether there are color levels set on first entry. 
+! Compute automatic open-ended levels.
+IF `($num) EQ 0` THEN
+   IF ($ferret_fill_levels"0|*>1") THEN DEFINE SYMBOL input_fill_levels = 1
+   IF ($ferret_poly_levels"0|*>1") THEN 
+      DEFINE SYMBOL ferret_fill_levels ($ferret_poly_levels)
+      DEFINE SYMBOL input_fill_levels = 1
+   ENDIF
+
+   LET its_plot = `STRINDEX(UPCASE("($operation_ID)"), "PLOT") GT 0`
+   IF `STRLEN("($ferret_view)") EQ 2 AND its_plot GT 0` THEN 
+     IF ($ferret_fill_levels"1|closed>0|*>1") THEN GO LAS_auto_levels  
+   ENDIF
+   IF `STRLEN("($ferret_view)") EQ 2 AND STRINDEX("($operation_ID)", "poly") GT 0` THEN 
+     IF ($ferret_fill_levels"1|closed>0|*>1") THEN GO LAS_auto_levels  
+   ENDIF
+   IF ($ferret_fill_levels"0|closed>1|*>0") THEN CANCEL SYMBOL ferret_poly_levels
+   IF ($ferret_fill_levels"0|closed>1|*>0") THEN CANCEL SYMBOL input_fill_levels
+   IF ($ferret_fill_levels"0|closed>1|*>0") THEN CANCEL SYMBOL ferret_fill_levels
+
+   IF `($ferret_poly_levels"0|*>1") EQ 0` THEN \
+      IF ($ferret_fill_levels"0|*>1") THEN DEFINE SYMBOL ferret_poly_levels ($ferret_fill_levels)
+ENDIF
+
+! When prop-prop plot colored by feature this is the max polygon color/shapes we use.
+DEFINE SYMBOL feature_max_labels = 200
+
+!---------------- end of feature_initialize_plot_settings.jnl -------------------------
+

@@ -1,0 +1,13 @@
+import pmel.sdig.las.Dataset
+import pmel.sdig.las.Variable
+
+model {
+    Dataset dataset
+}
+
+    json g.render(dataset, [excludes: ["datasets", "variables", "vectors", "parent"]]) {
+        if ( dataset.parent != null ) {
+            parent g.render(dataset.parent, [template: "/dataset/dataset", excludes: ["datasets", "variables", "datasetProperties", "parent"]])
+        }
+    }
+

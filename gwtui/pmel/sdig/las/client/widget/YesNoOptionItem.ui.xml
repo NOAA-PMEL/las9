@@ -1,0 +1,31 @@
+<ui:UiBinder xmlns:ui='urn:ui:com.google.gwt.uibinder'
+             xmlns:g='urn:import:com.google.gwt.user.client.ui'
+             xmlns:m='urn:import:gwt.material.design.client.ui'>
+    <m:MaterialPanel>
+        <m:MaterialRow marginTop="0" marginBottom="0">
+            <m:MaterialColumn grid="s12" margin="0">
+                <m:MaterialCollapsible padding="0" margin="0" shadow="0" grid="s12">
+                    <m:MaterialCollapsibleItem>
+                        <m:MaterialCollapsibleHeader padding="0">
+                            <m:MaterialPanel margin="0" addStyleNames="valign-wrapper">
+                                <m:MaterialLink display="FLEX" padding="0" marginLeft="8" text="The YesNow Option" ui:field="title"></m:MaterialLink>
+                                <m:MaterialIcon display="FLEX" marginRight="4" iconType="HELP" iconSize="SMALL" float="RIGHT"></m:MaterialIcon>
+                            </m:MaterialPanel>
+                        </m:MaterialCollapsibleHeader>
+                        <m:MaterialCollapsibleBody>
+                            <m:MaterialRow>
+                                <m:MaterialColumn ui:field="help" grid="s12" lineHeight="24" addStyleNames="LAS-help-cursor">
+                                </m:MaterialColumn>
+                            </m:MaterialRow>
+                        </m:MaterialCollapsibleBody>
+                    </m:MaterialCollapsibleItem>
+                </m:MaterialCollapsible>
+            </m:MaterialColumn>
+        </m:MaterialRow>
+        <m:MaterialRow>
+            <m:MaterialColumn grid="s12">
+                <m:MaterialSwitch ui:field="ynswitch"></m:MaterialSwitch>
+            </m:MaterialColumn>
+        </m:MaterialRow>
+    </m:MaterialPanel>
+</ui:UiBinder>

@@ -1,0 +1,5 @@
+import pmel.sdig.las.DatasetProperty
+model {
+    Set<DatasetProperty> datasetproperties
+}
+json tmpl.datasetproperty(datasetproperties)

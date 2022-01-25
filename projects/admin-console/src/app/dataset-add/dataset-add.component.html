@@ -1,0 +1,52 @@
+<div class="ui-g">
+  <div class="ui-g-6">
+    <div class="ui-g-12">
+      <!-- style as https://stackoverflow.com/questions/47124802/angular-material-making-a-mat-card-fill-an-entire-mat-grid-tile -->
+      <p-card header="Single netCDF" subheader="Add a single netCDF gridded data set from a file or OPeNDAP URL" styleClass="ui-card-shadow">
+        <!-- https://stackoverflow.com/questions/46502294/angular-change-matinput-size#new-answer -->
+        <input class="textbox-width" type="text" pInputText [formControl]="griddedSingleFormControl" placeholder="Gridded netCDF file or OPeNDAP URL">
+        <p-footer><button pButton class="ui-button-primary" type="submit" (click)="submitNetcdf()" label="Add"></button></p-footer>
+      </p-card>
+    </div>
+    <div class="ui-g-12">
+      <p-card header="Single DSG" subheader="Add a single Discrete Geometry data set from an ERDDAP tabledap URL or many DSG data sets from a ERDDAP search URL">
+        <!-- https://stackoverflow.com/questions/46502294/angular-change-matinput-size#new-answer -->
+        <input class="textbox-width" type="text" pInputText [formControl]="dsgSingleFormControl" placeholder="ERDDAP tabledap data set URL">
+        <p-footer><button pButton class="ui-button-primary" type="submit" (click)="submitDsg()" label="Add"></button></p-footer>
+      </p-card>
+    </div>
+    <div class="ui-g-12">
+      <p-card header="THREDDS Catalog" subheader="Add an entire THREDDS catalog from a catalog URL">
+        <!-- https://stackoverflow.com/questions/46502294/angular-change-matinput-size#new-answer -->
+        <input class="textbox-width" type="text" pInputText [formControl]="threddsFormControl" placeholder="THREDDS Catalog URL">
+        <p-footer><button pButton class="ui-button-primary" type="submit" (click)="submitThredds()" label="Add"></button></p-footer>
+      </p-card>
+    </div>
+    <div class="ui-g-12">
+      <p-card header="ERDDAP Tabledap" subheader="Add all the tabledap datasets from an ERDDAP server">
+        <!-- https://stackoverflow.com/questions/46502294/angular-change-matinput-size#new-answer -->
+        <input class="textbox-width" type="text" pInputText [formControl]="erddapFormControl" placeholder="ERDDAP tabledap URL (http[s]://host.domain/erddap/tabledap) or a ERDDAP search that returns only tabledap datasets.">
+        <p-footer><button pButton class="ui-button-primary" type="submit" (click)="submitTabledap()" label="Add"></button></p-footer>
+      </p-card>
+    </div>
+    <div class="ui-g-12">
+      <p-card header="ERDDAP Griddap" subheader="Add all the griddap datasets from an ERDDAP server">
+        <!-- https://stackoverflow.com/questions/46502294/angular-change-matinput-size#new-answer -->
+        <input class="textbox-width" type="text" pInputText [formControl]="erddapFormControl" placeholder="ERDDAP griddap URL (http[s]://host.domain/erddap/griddap) or an ERDDAP search that returns only griddap datasets">
+        <p-footer>
+          <button pButton class="ui-button-primary" type="submit" (click)="submitGriddap()" label="Add"></button>
+        </p-footer>
+      </p-card>
+    </div>
+  </div>
+  <div class="ui-g-6">
+    <app-dataset-picker [header]="header" [subHeader]="sub_header"></app-dataset-picker>
+    <p-card header="Add an empty data set to this level.">
+      <button pButton class="ui-button-primary" label="Add" (click)="addEmpty()"></button>
+      <p-footer>
+        <input class="textbox-width" type="text" pInputText class="textbox-width"  [formControl]="addEmptyFormControl" placeholder="Dataset Name to Add at this Level">
+      </p-footer>
+    </p-card>
+  </div>
+</div>
+

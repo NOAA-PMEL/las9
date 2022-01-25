@@ -1,0 +1,69 @@
+! define_dsg_taxis
+! Set up a time axis based on the time data in a DSG file, 
+! with fewer points, and with a larger range if the range is quite short.
+
+
+DEFINE SYMBOL shape = `($data_t_var),RETURN=shape`
+DEFINE SYMBOL indx = ($shape"0|POINT>0|X>i|Z>k|T>l|E>m|*>0")
+
+IF ($indx"0|0|*>1") THEN
+   LET t1 = ($data_t_var)[($indx)=@MIN]
+   LET t2 = ($data_t_var)[($indx)=@MAX]
+   IF ($indx"|m>0|*>1") THEN
+      LET tmin = `t1[e=@min]`
+      LET tmax = `t2[e=@max]`
+   ELSE
+     LET tmin = `t1`
+     LET tmax = `t2`
+   ENDIF
+ELSE
+
+! single point in time
+   LET t1 = ($data_t_var)
+   LET t2 = t1
+   LET tmin = t1
+   LET tmax = t1
+ENDIF
+
+
+! Adjust if start and end times are too close together
+LET oneday = 1
+
+LET since_loc = STRINDEX("`($data_t_var).units`","since") - 2
+IF `since_loc GT 1` THEN 
+   LET tunits = SUBSTRING("`($data_t_var).units`",1,`since_loc`)
+   DEFINE SYMBOL tunits = `tunits`
+ENDIF
+LET time_units = "($tunits)"
+
+IF `STRINDEX(time_units, "sec") GT 0` THEN LET oneday = 24*60*60
+IF `STRINDEX(time_units, "min") GT 0` THEN LET oneday = 24*60
+IF `STRINDEX(time_units, "ho") GT 0` THEN LET oneday = 24
+IF `STRINDEX(time_units, "da") GT 0` THEN LET oneday = 1
+
+LET del = `(tmax-tmin)/oneday`
+
+IF `del LT 1` THEN
+   IF `tmin GT 0` THEN 
+      LET tmin = `tmin - oneday`
+      LET tmax = `tmax + oneday`
+   ELSE
+      LET tmin = `tmin + oneday`
+      LET tmax = `tmax - oneday`
+   ENDIF   
+ENDIF
+
+DEFINE AXIS/T=`tmin`:`tmax`:1/T0="`($data_t_var).time_origin`"/units=($tunits) taxis 
+LET ttvar = t[gt=taxis]
+LET nt = `ttvar,RETURN=lsize`
+
+! If the units are seconds since, we don't need that much resolution for this. Make it hours.
+
+IF `($tunits"0|seconds>1|*>0") AND nt GT 100*3600` THEN \
+DEFINE AXIS/T=`tmin`:`tmax`:3600/T0="`($data_t_var).time_origin`"/units=($tunits) taxis 
+
+! Keep the axis from being super dense.
+if `nt gt 2000` THEN \
+DEFINE AXIS/T=`tmin`:`tmax`/NPOINTS=2000/T0="`($data_t_var).time_origin`"/units=($tunits) taxis 
+
+! End of script ------------ define_dsg_taxis.jnl--------------------------

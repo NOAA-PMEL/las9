@@ -1,0 +1,73 @@
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! $Header$
+! insitu_waterfall_xz.jnl
+!
+! Creates a XZ Waterfall plot 
+!
+! Set the gif filename, changing it from .gif to the name from this request
+! Set up to write info to the debug log so that FshowGO can be used
+GO LAS_initial_setup
+
+! Initialize the region and data.
+
+DEFINE SYMBOL  data_initialization_script = feature_initialize_data_insitu
+
+! DEFINE SYMBOL  ferret_label = 0
+
+SET MODE verify:always  ! allows for debugging
+
+DEFINE SYMBOL ribbon = 1   ! straight lines colored by the color var
+!DEFINE SYMBOL ribbon = 0   ! wiggly waterfall plots, still colored if there is a color palette.
+DEFINE SYMBOL its_insitu = 1
+
+! Open the dataset, analyze the DSG dataset, set up plot variables and 
+! Z-axis for plotting. 
+
+GO LAS_insitu_waterfall_setup
+
+! Make a blank plot with the correct X axis on the horizal and depth
+! axis on the vertical.
+
+LET ntic = 10
+
+PPL %range ($region_x_lo),  ($region_x_hi), `ntic`
+LET xlo = ($ppl$range_low)
+LET xhi = ($ppl$range_high)
+
+! First plot sets up plot symbols. The reset_labels and color-key labeled by dates
+! expect the color plot to be an overlay.
+
+DEFINE AXIS/x=`xlo`:`xhi`/npoints=100/units="`($data_x_var),RETURN=units`" haxis
+
+DEFINE SYMBOL insitu_blankvar = blankvar
+LET blankvar = 100+x[gx=haxis] + z[gz=vaxis]
+DEFINE SYMBOL insitu_blankvar_qual = /PAL=white/NOLAB/NOKEY/LEV=(0,1,1)($vlim)
+SHADE($insitu_blankvar_qual) blankvar
+
+ANNOTATE/norm/xpos=-0.05/ypos=0.5/angle=90/halign=0/siz=0.12 "`($data_z_var),RETURN=units`"
+
+PPL COLOR,6,60,60,60 ! grey
+PLOT/OVER/VS/SYM=dot/NOKEY/NOLAB/COLOR=6 ($data_x_var), ($data_z_var)
+
+PLOT/OVER/VS/RIBBON/MISS=blank/SYM=19/THICK($qualifiers)/SET ($data_x_var), ($data_z_var), ($data_var)
+   IF ($ferret_annotations%0|*>1%) THEN GO reset_labels
+   GO key_at_top
+
+PPL RIBBON/OVER
+ 
+! Add location labels as annotation notes.
+
+DEFINE SYMBOL latitude_lab = Latitude: ($region_y_lo):($region_y_hi)
+DEFINE SYMBOL time_lab = Time ($region_t_lo):($region_t_hi)
+
+! Add dataset information on the top
+GO feature_labels
+
+! restore key-annotation setting: keys not annotated
+KEYMARK 0
+
+! Save the results
+
+GO LAS_results box
+
+! End of file ------------insitu_waterfall_xz.jnl--------------------------

@@ -1,0 +1,14 @@
+<div *ngIf="jsonForm">
+  <form (ngSubmit)="onSubmit()" [formGroup]="jsonForm">
+  <p-card *ngIf="properties.length > 0">
+    <div *ngFor="let property of properties" class="form-row">
+      <app-form-property [property]="property" [jsonForm]="jsonForm"></app-form-property>
+    </div>
+  </p-card>
+  </form>
+<!--
+  <div *ngIf="payLoad" class="form-row">
+    <strong>Saved the following values</strong><br>{{payLoad}}
+  </div>
+-->
+</div>

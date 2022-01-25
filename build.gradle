@@ -1,0 +1,187 @@
+buildscript {
+    repositories {
+        maven { url "https://repo.grails.org/grails/core" }
+    }
+    dependencies {
+        classpath "org.grails:grails-gradle-plugin:$grailsGradlePluginVersion"
+        classpath "org.grails.plugins:hibernate5:7.2.1"
+        classpath "gradle.plugin.com.github.erdi.webdriver-binaries:webdriver-binaries-gradle-plugin:2.6"
+        classpath "com.bertramlabs.plugins:asset-pipeline-gradle:3.3.4"
+        classpath "org.grails.plugins:views-gradle:2.1.2"
+    }
+}
+
+version "9.7"
+group "las"
+
+apply plugin:"eclipse"
+apply plugin:"idea"
+apply plugin:"war"
+apply plugin:"org.grails.grails-web"
+apply plugin:"com.github.erdi.webdriver-binaries"
+apply plugin:"com.bertramlabs.asset-pipeline"
+apply plugin:"org.grails.grails-gsp"
+apply plugin: "org.grails.grails-web"
+apply plugin: "org.grails.plugins.views-json"
+
+repositories {
+    maven { url "https://repo.grails.org/grails/core" }
+    maven { url "https://artifacts.unidata.ucar.edu/repository/unidata-all" }
+    mavenCentral()
+}
+
+configurations {
+    developmentOnly
+    runtimeClasspath {
+        extendsFrom developmentOnly
+    }
+}
+
+dependencies {
+    developmentOnly("org.springframework.boot:spring-boot-devtools")
+    compileOnly "io.micronaut:micronaut-inject-groovy"
+    console "org.grails:grails-console"
+    implementation "org.springframework.boot:spring-boot-starter-logging"
+    implementation "org.springframework.boot:spring-boot-starter-validation"
+    implementation "org.springframework.boot:spring-boot-autoconfigure"
+    implementation "org.grails:grails-core"
+    implementation "org.springframework.boot:spring-boot-starter-actuator"
+    implementation "org.springframework.boot:spring-boot-starter-tomcat"
+    implementation "org.grails:grails-web-boot"
+    implementation "org.grails:grails-logging"
+    implementation "org.grails:grails-plugin-rest"
+    implementation "org.grails:grails-plugin-databinding"
+    implementation "org.grails:grails-plugin-i18n"
+    implementation "org.grails:grails-plugin-services"
+    implementation "org.grails:grails-plugin-url-mappings"
+    implementation "org.grails:grails-plugin-interceptors"
+    implementation "org.grails.plugins:cache"
+    implementation "org.grails.plugins:async"
+    implementation "org.grails.plugins:scaffolding"
+    implementation "org.grails.plugins:events"
+    implementation "org.grails.plugins:hibernate5"
+    implementation "org.hibernate:hibernate-core:5.6.3.Final"
+    implementation "org.grails.plugins:gsp"
+    profile "org.grails.profiles:web"
+    runtimeOnly "org.glassfish.web:el-impl:2.2.1-b05"
+    runtimeOnly "com.h2database:h2"
+    runtimeOnly "org.apache.tomcat:tomcat-jdbc"
+    runtimeOnly "javax.xml.bind:jaxb-api:2.3.1"
+    runtimeOnly "com.bertramlabs.plugins:asset-pipeline-grails:3.3.4"
+    testImplementation "io.micronaut:micronaut-inject-groovy"
+    testImplementation "org.grails:grails-gorm-testing-support"
+    testImplementation "org.mockito:mockito-core"
+    testImplementation "org.grails:grails-web-testing-support"
+    testImplementation "org.grails.plugins:geb"
+    testImplementation "org.seleniumhq.selenium:selenium-remote-driver:4.0.0"
+    testImplementation "org.seleniumhq.selenium:selenium-api:4.0.0"
+    testImplementation "org.seleniumhq.selenium:selenium-support:4.0.0"
+    testRuntimeOnly "org.seleniumhq.selenium:selenium-chrome-driver:4.0.0"
+    testRuntimeOnly "org.seleniumhq.selenium:selenium-firefox-driver:4.0.0"
+    // Should come with app created with JSON views, but I added this
+    // from the instructions here: http://views.grails.org/latest/
+    implementation "org.grails.plugins:views-json:2.1.2"
+    // Mine
+    ext {
+        unidata_version = '5.4.2'
+    }
+
+    implementation "edu.ucar:cdm-core:${unidata_version}"
+    implementation "edu.ucar:cdm-radial:${unidata_version}"
+    implementation "edu.ucar:cdm-misc:${unidata_version}"
+    implementation "edu.ucar:cdm-image:${unidata_version}"
+    implementation "edu.ucar:bufr:${unidata_version}"
+    implementation "edu.ucar:netcdf4:${unidata_version}"
+    implementation "edu.ucar:opendap:${unidata_version}"
+    implementation "edu.ucar:cdm-vis5d:${unidata_version}"
+    implementation "edu.ucar:cdm-mcidas:${unidata_version}"
+
+    implementation group: 'com.google.code.gson', name: 'gson', version: '2.8.2'
+    // https://mvnrepository.com/artifact/jdom/jdom
+    implementation group: 'jdom', name: 'jdom', version: '1.1'
+    implementation 'joda-time:joda-time:2.10.13'
+    implementation 'com.agileorbit:schwartz:2.0.0.RC1'
+    // force version 2.2.3 of quartz
+    String quartzVersion = '2.2.3'
+    implementation 'org.quartz-scheduler:quartz:' + quartzVersion, {
+        exclude module: 'c3p0'
+    }
+    compileOnly 'org.quartz-scheduler:quartz-jobs:' + quartzVersion
+
+    // https://github.com/nerdErg/grails-shiro
+    // for access control
+    implementation "org.grails.plugins:grails-shiro:4.4"
+
+    // https://mvnrepository.com/artifact/mysql/mysql-connector-java
+    implementation group: 'mysql', name: 'mysql-connector-java', version: '8.0.27'
+
+    // https://mvnrepository.com/artifact/org.owasp.encoder/encoder
+    // Needed for the IOSP Code which we are compiling here for creating the las#thredds.war
+    implementation group: 'org.owasp.encoder', name: 'encoder', version: '1.2.3'
+    implementation "edu.ucar:thredds:4.6.19"
+    implementation 'edu.ucar:tds:4.6.19:classes@jar'
+
+}
+
+bootRun {
+    ignoreExitValue true
+    jvmArgs(
+        '-Dspring.output.ansi.enabled=always', 
+        '-noverify', 
+        '-XX:TieredStopAtLevel=1',
+        '-Xmx1024m')
+    sourceResources sourceSets.main
+    String springProfilesActive = 'spring.profiles.active'
+    systemProperty springProfilesActive, System.getProperty(springProfilesActive)
+}
+
+tasks.withType(GroovyCompile) {
+    configure(groovyOptions) {
+        forkOptions.jvmArgs = ['-Xmx1024m']
+    }
+}
+
+tasks.withType(Test) {
+    useJUnitPlatform()
+}
+
+webdriverBinaries {
+    chromedriver '2.45.0'
+    geckodriver '0.30.0'
+}
+
+tasks.withType(Test) {
+    systemProperty "geb.env", System.getProperty('geb.env')
+    systemProperty "geb.build.reportsDir", reporting.file("geb/integrationTest")
+    systemProperty "webdriver.chrome.driver", System.getProperty('webdriver.chrome.driver')
+    systemProperty "webdriver.gecko.driver", System.getProperty('webdriver.gecko.driver')
+}
+
+
+assets {
+    minifyJs = true
+    minifyCss = true
+}
+
+// A task to compile the GWT code using a scripts, 'cause that's what I find easiest
+task compileGWT (type:Exec) {
+    commandLine 'sh','./GWT-compile'
+}
+
+// Clean out the output directory
+task cleanout (type:Exec) {
+    commandLine 'sh','./cleanout'
+}
+
+task compileAngular (type:Exec) {
+    commandLine 'sh','./build-admin.sh'
+}
+
+// Make the assembly of the war file depend on compiling the GWT
+war.dependsOn cleanout, compileGWT, compileAngular
+war {
+    exclude "src/main/java"
+    exclude "src/main/resources/iosp"
+}
+
+

@@ -1,0 +1,11 @@
+.wide-button {
+  width: 100%;
+  text-align: left;
+}
+.wide-button button {
+  width: 100% !important;
+  text-align: left;
+}
+.bot_pad {
+  padding-bottom: 20px;
+}

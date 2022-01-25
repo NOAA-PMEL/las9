@@ -1,0 +1,14 @@
+#!/bin/sh
+APPDIR=`pwd`
+GWTDIR="/usr/local/gwt-2.8.2"
+LIBS=/home/rhs/IdeaProjects/las9g5/lib/*
+JAVAOPS="-Xmx1024M -Xms1024M"
+CMPNTDIR="/home/rhs/IdeaProjects/las9g5/src/main/webapp/js/gwt"
+CLASSPATH="${LIBS}:${GWTDIR}/*:${APPDIR}/gwtui"
+#GWTOPTIONS="-strict"
+GWTOPTIONS="-strict -XnoclassMetadata -optimize 9"
+
+
+# remove -style DETAILED to default to OBFUSCATED to reduce the size.
+echo java ${JAVAOPS} -cp "${CLASSPATH}" com.google.gwt.dev.Compiler -war "${CMPNTDIR}" "$@" ${GWTOPTIONS} pmel.sdig.las.UI
+/home/rhs/.sdkman/candidates/java/8.0.302-open/bin/java ${JAVAOPS} -cp "${CLASSPATH}" com.google.gwt.dev.Compiler -war "${CMPNTDIR}" "$@" ${GWTOPTIONS} pmel.sdig.las.UI
