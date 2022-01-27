@@ -17,6 +17,8 @@ export class DatasetOrganizeComponent implements OnInit {
   stateChanges: Subscription;
   header:string = "Navigate to the data set you want to move.";
   sub_header = "Click on the move button of data set(s) you want to move.";
+  right_header="Select a Data Set Destination";
+  right_sub_header="The data set will be added to this list.";
   ngOnInit() {
   }
 

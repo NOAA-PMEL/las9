@@ -1,38 +1,38 @@
-<div class="ui-g">
-  <div class="{{side_by_side ? 'ui-g-6' : 'ui-g-12'}}">
+<div class="grid">
+  <div class="{{side_by_side ? 'col-6' : 'col-12'}}">
     <p-card [header]="header" [subheader]="subHeader">
       <p-breadcrumb [model]="breadcrumbs"></p-breadcrumb>
       <p-scrollPanel [style]="{width: '100%', height: '200px'}">
         <div style="padding-bottom: 25px;">
           <div *ngFor="let dataset of datasets">
-            <div class="ui-g" style="padding: 0px;">
-              <div class="ui-g-10" style="padding: 0px">
-                <button pButton class="wide-button ui-button-secondary" label="{{dataset.title}}" (click)="getDataset(dataset)"></button>
+            <div class="grid" style="padding: 0px;">
+              <div class="col-10">
+                <button pButton class="wide-button p-button-secondary" label="{{dataset.title}}" (click)="getDataset(dataset)"></button>
               </div>
               <div *ngIf="edit">
-                <div class="ui-g-1" style="padding: 0px">
-                  <button label="Edit" pButton class="ui-button-warning" type="button" icon="pi pi-pencil" iconPos="left" (click)="editDataset(dataset)"></button>
+                <div class="col-1">
+                  <button label="Edit" pButton class="p-button-warning" type="button" icon="pi pi-pencil" iconPos="left" (click)="editDataset(dataset)"></button>
                 </div>
               </div>
               <div *ngIf="move">
-                <div class="ui-g-1" style="padding: 0px">
-                  <button label="Move" pButton class="ui-button-warning" type="button" icon="pi pi-pencil" iconPos="left" (click)="moveDataset(dataset)"></button>
+                <div class="col-1">
+                  <button label="Move" pButton class="p-button-warning" type="button" icon="pi pi-pencil" iconPos="left" (click)="moveDataset(dataset)"></button>
                 </div>
               </div>
               <div *ngIf="hide">
-                <div class="ui-g-1" style="padding: 0px">
-                  <button label="Hide" pButton class="ui-button-warning" type="button" icon="pi pi-pencil" iconPos="left" (click)="moveDataset(dataset)"></button>
+                <div class="col-1">
+                  <button label="Hide" pButton class="p-button-warning" type="button" icon="pi pi-pencil" iconPos="left" (click)="moveDataset(dataset)"></button>
                 </div>
               </div>
               <div *ngIf="delete">
-                <div class="ui-g-1" style="padding: 0px">
-                  <button label="Delete" pButton class="ui-button-warning" type="button" icon="pi pi-trash" iconPos="left" (click)="deleteDataset(dataset)"></button>
+                <div class="col-1">
+                  <button label="Delete" pButton class="p-button-warning" type="button" icon="pi pi-trash" iconPos="left" (click)="deleteDataset(dataset)"></button>
                 </div>
               </div>
               <div *ngIf="update">
                 <div *ngIf="dataset.variableChildren">
-                <div class="ui-g-1" style="padding: 0px">
-                  <button label="Edit" pButton class="ui-button-warning" type="button" icon="pi pi-pencil" iconPos="left" (click)="editUpdate(dataset)"></button>
+                <div class="col-1">
+                  <button label="Edit" pButton class="p-button-warning" type="button" icon="pi pi-pencil" iconPos="left" (click)="editUpdate(dataset)"></button>
                 </div>
                 </div>
               </div>
@@ -44,18 +44,19 @@
       </p-footer>
     </p-card>
   </div>
-  <div *ngIf="side_by_side" class="ui-g-6">
-    <p-card [header]="'Select a Data Set Destination'" [subheader]="'The data set will be added to this list.'">
-      <p-breadcrumb [model]="secondary_breadcrumbs"></p-breadcrumb>
+  <div *ngIf="side_by_side" class="col-6">
+    <p-card [header]="right_header" [subheader]="right_sub_header">
+      <p-breadcrumb items="secondary_breadcrumbs"></p-breadcrumb>
       <p-scrollPanel [style]="{width: '100%', height: '200px'}">
         <div *ngFor="let dataset of secondary_datasets">
-          <div class="ui-g" style="padding: 0px">
-            <div class="{{hide ? 'ui-g-11' : 'ui-g-12'}}" style="padding: 0px">
-              <button pButton class="wide-button ui-button-secondary" label="{{dataset.title}}" (click)="getSecondaryDataset(dataset)"></button>
+          <div class="grid">
+<!--            <div class="{{hide ? 'col-11' : 'col-12'}}">-->
+            <div class="col-10">
+              <button pButton class="wide-button p-button-secondary" label="{{dataset.title}}" (click)="getSecondaryDataset(dataset)"></button>
             </div>
             <div *ngIf="hide">
-              <div class="ui-g-1" style="padding: 0px">
-                <button label="Show" pButton class="ui-button-success" type="button" icon="pi pi-pencil" iconPos="left" (click)="showDataset(dataset)"></button>
+              <div class="col-1">
+                <button label="Show" pButton class="p-button-success" type="button" icon="pi pi-pencil" iconPos="left" (click)="showDataset(dataset)"></button>
               </div>
             </div>
           </div>

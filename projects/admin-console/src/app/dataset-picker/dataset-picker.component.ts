@@ -7,6 +7,7 @@ import {ApplicationStateService} from "../application-state.service";
 import {AddProperty} from "../../add-property";
 import {AddRequest} from "../../add-request";
 import {AdminService} from "../../admin.service";
+import {MenuItem} from "primeng/api";
 
 @Component({
   selector: 'app-dataset-picker',
@@ -29,6 +30,10 @@ export class DatasetPickerComponent implements OnInit {
   @Input()
   subHeader;
   @Input()
+  right_header;
+  @Input()
+  right_sub_header;
+  @Input()
   edit: boolean = false;
   @Input()
   move: boolean = false;
@@ -42,7 +47,7 @@ export class DatasetPickerComponent implements OnInit {
   @Input()
   side_by_side: boolean = false;
 
-  secondary_breadcrumbs = [];
+  secondary_breadcrumbs: MenuItem[];
   secondary_datasets;
   current_secondary_type;
 

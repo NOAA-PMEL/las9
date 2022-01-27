@@ -10,15 +10,6 @@ import { HttpClientModule } from '@angular/common/http';
 import { JsonFormComponent } from './forms/json-form/json-form.component';
 import { FormPropertyComponent } from './forms/form-property/form-property.component';
 import { DatasetPickerComponent } from './dataset-picker/dataset-picker.component';
-import {
-  BreadcrumbModule,
-  ButtonModule,
-  CardModule,
-  DialogModule, DropdownModule, DynamicDialogModule, PickListModule, ProgressBarModule, RadioButtonModule,
-  ScrollPanelModule,
-  SlideMenuModule,
-  TabViewModule
-} from "primeng";
 import {AdminComponent} from "./admin/admin.component";
 import { DatasetEditComponent } from './dataset-edit/dataset-edit.component';
 import { DatasetAddComponent } from './dataset-add/dataset-add.component';
@@ -32,7 +23,14 @@ import {DatasetService} from "../dataset.service";
 import {AdminService} from "../admin.service";
 import {ApplicationStateService} from "./application-state.service";
 import {JsonFormService} from "../json-form.service";
-
+import {ProgressBarModule} from "primeng/progressbar";
+import {TabViewModule} from "primeng/tabview";
+import {DialogModule} from "primeng/dialog";
+import {CardModule} from "primeng/card";
+import {ScrollPanelModule} from "primeng/scrollpanel";
+import {ButtonModule} from "primeng/button";
+import {BreadcrumbModule} from 'primeng/breadcrumb';
+import {MenuItem} from 'primeng/api';
 
 @NgModule({
     declarations: [
@@ -50,26 +48,21 @@ import {JsonFormService} from "../json-form.service";
         DatasetUpdateComponent,
         BackupRestoreComponent,
     ],
-    imports: [
-        BrowserModule,
-        AppRoutingModule,
-        ReactiveFormsModule,
-        BrowserAnimationsModule,
-        FormsModule,
-        HttpClientModule,
-        ButtonModule,
-        DialogModule,
-        DynamicDialogModule,
-        CardModule,
-        SlideMenuModule,
-        BreadcrumbModule,
-        ScrollPanelModule,
-        TabViewModule,
-        PickListModule,
-        ProgressBarModule,
-        DropdownModule,
-        RadioButtonModule
-    ],
+  imports: [
+    BrowserModule,
+    AppRoutingModule,
+    ReactiveFormsModule,
+    BrowserAnimationsModule,
+    FormsModule,
+    HttpClientModule,
+    ProgressBarModule,
+    TabViewModule,
+    DialogModule,
+    CardModule,
+    ScrollPanelModule,
+    ButtonModule,
+    BreadcrumbModule
+  ],
     providers: [
         DatasetService,
         AdminService,

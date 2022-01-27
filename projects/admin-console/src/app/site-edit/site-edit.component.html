@@ -4,23 +4,23 @@
 <p-card *ngIf="footerLinks" header='The Footer Links'>
   <p-scrollPanel [style]="{width: '100%', height: '200px'}">
     <div *ngFor="let flink of footerLinks">
-      <div class="ui-g" style="padding: 0px">
-        <div class="ui-g-10" style="padding: 0px">
-          <button pButton class="wide-button ui-button-secondary" label="{{flink.linktext}}" (click)="editLink(flink)"></button>
+      <div class="grid">
+        <div class="col-10">
+          <button pButton class="wide-button p-button-secondary" label="{{flink.linktext}}" (click)="editLink(flink)"></button>
         </div>
-        <div class="ui-g-1" style="padding: 0px">
-           <button label="Edit" pButton class="wide-button ui-button-warning" type="button" icon="pi pi-pencil" iconPos="left" (click)="editLink(flink)"></button>
+        <div class="col-1">
+           <button label="Edit" pButton class="wide-button p-button-warning" type="button" icon="pi pi-pencil" iconPos="left" (click)="editLink(flink)"></button>
         </div>
-        <div class="ui-g-1" style="padding: 0px">
-          <button label="Delete" pButton class="wide-button ui-button-danger" type="button" icon="pi pi-trash" iconPos="left" (click)="deleteLink(flink)"></button>
+        <div class="col-1">
+          <button label="Delete" pButton class="wide-button p-button-danger" type="button" icon="pi pi-trash" iconPos="left" (click)="deleteLink(flink)"></button>
         </div>
       </div>
     </div>
   </p-scrollPanel>
-  <button pButton class="ui-button-primary" (click)="add()" label="Add Link"></button>
+  <button pButton class="p-button-primary" (click)="add()" label="Add Link"></button>
 </p-card>
 <p-dialog [style]="{width: '80%'}" [(visible)]="edit_footerLink" header="Editing Footer LInk">
   <app-json-form [properties]="linkProperties" [jsonForm]="footerLinkForm"></app-json-form>
-  <button pButton class="ui-button-primary" (click)="doneLink()" label="Done"></button>
+  <button pButton class="p-button-primary" (click)="doneLink()" label="Done"></button>
 </p-dialog>
-<button pButton class="ui-button-primary" (click)="save()" label="Save"></button>
+<button pButton class="p-button-primary" (click)="save()" label="Save"></button>
