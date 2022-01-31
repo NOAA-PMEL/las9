@@ -636,6 +636,8 @@ public class UI implements EntryPoint {
                         layout.panel1.clearAnnotations();
                         layout.removeBreadcrumbs(1);
                         layout.advancedSearch.setDisplay(Display.BLOCK);
+                        layout.prevAdvancedSearch.setDisplay(Display.NONE);
+                        layout.nextAdvancedSearch.setDisplay(Display.NONE);
                         advancedSearch = true;
                         layout.clearDatasets();
                         layout.showDataProgress();
@@ -740,6 +742,8 @@ public class UI implements EntryPoint {
                     layout.infoHeader.setDisplay(Display.NONE);
                     advancedSearch = false;
                     layout.advancedSearch.setDisplay(Display.NONE);
+                    layout.prevAdvancedSearch.setDisplay(Display.NONE);
+                    layout.nextAdvancedSearch.setDisplay(Display.NONE);
                     layout.panel1.setVisible(true);
                     layout.panel1.clearAnnotations();
                     layout.panel1.clearPlot();
@@ -1059,6 +1063,8 @@ public class UI implements EntryPoint {
                 layout.infoHeader.setDisplay(Display.NONE);
                 advancedSearch = false;
                 layout.advancedSearch.setDisplay(Display.NONE);
+                layout.prevAdvancedSearch.setDisplay(Display.NONE);
+                layout.nextAdvancedSearch.setDisplay(Display.NONE);
                 long id = event.getId();
                 layout.setInfoSelect(id);
                 String rid = id + ".json";
@@ -1498,6 +1504,8 @@ public class UI implements EntryPoint {
                 layout.infoHeader.setDisplay(Display.NONE);
                 advancedSearch = false;
                 layout.advancedSearch.setDisplay(Display.NONE);
+                layout.prevAdvancedSearch.setDisplay(Display.NONE);
+                layout.nextAdvancedSearch.setDisplay(Display.NONE);
                 layout.panel1.setVisible(true);
                 state.getPanelState(tp).setResultSet(results);
                 layout.setState(tp, state);
@@ -1878,6 +1886,8 @@ public class UI implements EntryPoint {
             layout.infoPanel.setDisplay(Display.BLOCK);
             advancedSearch = false;
             layout.advancedSearch.setDisplay(Display.NONE);
+            layout.prevAdvancedSearch.setDisplay(Display.NONE);
+            layout.nextAdvancedSearch.setDisplay(Display.NONE);
             layout.animate.setEnabled(false);
             layout.topMenuEnabled(false);
             layout.infoPanel.clear();
@@ -1909,6 +1919,8 @@ public class UI implements EntryPoint {
             layout.infoPanel.setDisplay(Display.NONE);
             layout.infoHeader.setDisplay(Display.NONE);
             layout.advancedSearch.setDisplay(Display.NONE);
+            layout.prevAdvancedSearch.setDisplay(Display.NONE);
+            layout.nextAdvancedSearch.setDisplay(Display.NONE);
             layout.infoPanel.clear();
             List<Dataset> searchDatasets = searchResults.getDatasetList();
             layout.advancedSearchTotal = searchResults.getTotal();
@@ -2515,6 +2527,8 @@ public class UI implements EntryPoint {
         layout.panel2.closeSettings();
         if (p.isClientPlot()) {
             layout.advancedSearch.setDisplay(Display.NONE);
+            layout.prevAdvancedSearch.setDisplay(Display.NONE);
+            layout.nextAdvancedSearch.setDisplay(Display.NONE);
             layout.panel1.getOutputPanel().setVisible(false);
             layout.panel1.clearPlot();
             makeDataRequest(variables, p);

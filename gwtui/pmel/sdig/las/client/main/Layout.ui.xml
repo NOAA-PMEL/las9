@@ -88,6 +88,7 @@
                                 <m:MaterialIcon marginLeft="4" ui:field="home" iconType="HOME"></m:MaterialIcon>
                                 <m:MaterialIcon ui:field="back" iconType="ARROW_BACK" iconPosition="RIGHT"/>
                                 <m:MaterialLink fontWeight="BOLDER" fontSize="1.4em" text="Data" display="FLEX"></m:MaterialLink>
+                                <m:MaterialButton ui:field="prevAdvancedSearch" text="Prev" display="NONE"/><m:MaterialButton ui:field="nextAdvancedSearch" text="Next" display="NONE"/>
                                 <!--
                                 Doesn't quite work right, seems counter intuitive, just use the breadcrumbs for now.
                                 <m:MaterialIcon ui:field="back" iconType="ARROW_BACK" iconPosition="RIGHT"/>
@@ -309,7 +310,7 @@
         <m:MaterialContainer ui:field="main">
             <m:MaterialRow paddingTop="60" ui:field="advancedSearch">
                 <m:MaterialPanel marginLeft="8" marginTop="8" marginBottom="8">
-                    <m:MaterialButton ui:field="advancedSearchLaunch" text="Search"/><m:MaterialButton ui:field="prevAdvancedSearch" text="Prev" display="NONE"/><m:MaterialButton ui:field="nextAdvancedSearch" text="Next" display="NONE"/>
+                    <m:MaterialButton ui:field="advancedSearchLaunch" text="Search"/>
                 </m:MaterialPanel>
                 <m:MaterialRow>
                     <m:MaterialColumn grid="s4">

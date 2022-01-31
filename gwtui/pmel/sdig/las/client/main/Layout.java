@@ -1677,6 +1677,7 @@ public class Layout extends Composite {
     @UiHandler("nextAdvancedSearch")
     void onAdvancedSearchNext(ClickEvent clickEvent) {
         runAdvancedSearch(advancedSearchOffset);
+        clickEvent.stopPropagation();
     }
     @UiHandler("prevAdvancedSearch")
     void onAdvancedSearchPrev(ClickEvent clickEvent) {
@@ -1685,5 +1686,6 @@ public class Layout extends Composite {
             offset = 0;
         }
         runAdvancedSearch(offset);
+        clickEvent.stopPropagation();
     }
 }
