@@ -909,6 +909,7 @@ class IngestService {
         if (!info_url.endsWith("/")) info_url = url + "/"
         info_url = info_url.replace("griddap", "info") + "index.json"
         log.info("\tBuilding LAS data set for " + url)
+        String sourceUrl = null;
         LASProxy lasProxy = new LASProxy();
         JsonParser jsonParser = new JsonParser();
         Dataset dataset = new Dataset()
@@ -1111,6 +1112,13 @@ class IngestService {
                                         log.debug("Rejecting grid type " + geo + " for griddap ERDDAP.")
                                         return null;
                                     }
+                                } else if ( metaName.equals("sourceUrl") ) {
+                                    sourceUrl = metaRow.get(4).getAsString()
+                                    if ( sourceUrl.startsWith("http") ) {
+                                        dataset.setHash(getDigest(sourceUrl))
+                                        dataset.setUrl(sourceUrl)
+                                    }
+                                    log.info("Switching to source url of " + sourceUrl);
                                 }
                             } else if (metaVar.equals("time")) {
                                 String metaName = metaRow.get(2).getAsString();
@@ -1151,7 +1159,12 @@ class IngestService {
                             variable.setName(metaRow.get(1).getAsString());
                             // Gets reset if there is a long_name attribute
                             variable.setTitle(metaRow.get(1).getAsString())
-                            variable.setUrl(url + "#" + metaRow.get(1).getAsString());
+                            // Use if available
+                            if ( sourceUrl != null ) {
+                                variable.setUrl(sourceUrl);
+                            } else {
+                                variable.setUrl(url);
+                            }
                             dataset.addToVariables(variable)
                         }
 

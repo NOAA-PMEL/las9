@@ -266,6 +266,9 @@ public class UI implements EntryPoint {
     // Incoming data set URL
     String xDataURL;
 
+    // Incoming dataset title
+    String xDatasetTitle;
+
     public void onModuleLoad() {
 
         iso = ISODateTimeFormat.dateTimeNoMillis();
@@ -275,6 +278,8 @@ public class UI implements EntryPoint {
 
         initialHistory = getAnchor();
         xDataURL = Util.getParameterString("data_url");
+
+        xDatasetTitle = Util.getParameterString("dataset_title");
 
         String start_url = Window.Location.getHref();
         if ( start_url.endsWith("las/"))
@@ -1903,6 +1908,7 @@ public class UI implements EntryPoint {
             layout.panel1.setVisible(true);
             layout.infoPanel.setDisplay(Display.NONE);
             layout.infoHeader.setDisplay(Display.NONE);
+            layout.advancedSearch.setDisplay(Display.NONE);
             layout.infoPanel.clear();
             List<Dataset> searchDatasets = searchResults.getDatasetList();
             layout.advancedSearchTotal = searchResults.getTotal();
@@ -1912,7 +1918,7 @@ public class UI implements EntryPoint {
             if ( layout.advancedSearchTotal > total ) {
                 if ( start > 0 ) {
                     layout.prevAdvancedSearch.setDisplay(Display.INLINE);
-                } else if ( start ==0 ) {
+                } else if ( start == 0 ) {
                     layout.prevAdvancedSearch.setDisplay(Display.NONE);
                 }
                 layout.nextAdvancedSearch.setDisplay(Display.INLINE);
@@ -1931,8 +1937,14 @@ public class UI implements EntryPoint {
                 if ( xDataURL != null && !xDataURL.isEmpty() ) {
                     xDataURL = null;
                 }
+                if ( xDatasetTitle != null && !xDatasetTitle.isEmpty() ) {
+                    xDatasetTitle = null;
+                }
             } else {
                 MaterialToast.fireToast("No data sets found matching your search terms.");
+                // if it was a URL search and it failed, don't try again
+                xDataURL = null;
+                xDatasetTitle = null;
                 info = false;
                 siteService.getSite("first.json", siteCallback);
                 layout.removeBreadcrumbs(1);
@@ -2044,19 +2056,35 @@ public class UI implements EntryPoint {
                 }
             }
 
-            if ( xDataURL != null && !xDataURL.isEmpty() ) {
-                MaterialToast.fireToast("Searching for initial data set.");
-                List<VariableProperty> vpl = new ArrayList<>();
-                SearchRequest sr = new SearchRequest();
-                sr.setCount(10);
-                sr.setOffset(0);
-                VariableProperty vp = new VariableProperty();
-                vp.setType("search");
-                vp.setName("url");
-                vp.setValue(xDataURL);
-                vpl.add(vp);
-                sr.setVariableProperties(vpl);
-                layout.startSearch(sr);
+            if ( ( xDataURL != null && !xDataURL.isEmpty() ) || (xDatasetTitle != null && !xDatasetTitle.isEmpty() )) {
+                // Do the title first
+                if ( xDatasetTitle != null && !xDatasetTitle.isEmpty()  ) {
+                    MaterialToast.fireToast("Searching for initial data set.");
+                    List<DatasetProperty> dpl = new ArrayList<>();
+                    SearchRequest sr = new SearchRequest();
+                    sr.setCount(10);
+                    sr.setOffset(0);
+                    DatasetProperty dp = new DatasetProperty();
+                    dp.setType("search");
+                    dp.setName("title");
+                    dp.setValue(xDatasetTitle);
+                    dpl.add(dp);
+                    sr.setDatasetProperties(dpl);
+                    layout.startSearch(sr);
+                } else if ( xDataURL != null && !xDataURL.isEmpty() ) {
+                    MaterialToast.fireToast("Searching for initial data set.");
+                    List<VariableProperty> vpl = new ArrayList<>();
+                    SearchRequest sr = new SearchRequest();
+                    sr.setCount(10);
+                    sr.setOffset(0);
+                    VariableProperty vp = new VariableProperty();
+                    vp.setType("search");
+                    vp.setName("url");
+                    vp.setValue(xDataURL);
+                    vpl.add(vp);
+                    sr.setVariableProperties(vpl);
+                    layout.startSearch(sr);
+                }
             } else {
                 layout.navcollapsible.setActive(1, true);
             }
