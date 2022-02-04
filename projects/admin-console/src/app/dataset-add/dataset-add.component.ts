@@ -15,6 +15,7 @@ import {ApplicationStateService} from "../application-state.service";
 export class DatasetAddComponent implements OnInit {
 
   error:boolean = false;
+  use_source_url:boolean = false;
 
   griddedSingleFormControl = new FormControl('', [
     Validators.required,
@@ -96,7 +97,11 @@ export class DatasetAddComponent implements OnInit {
   submitGriddap() {
     const addProperty1: AddProperty = {name: "parent_id", value: this.picker.current_id}
     const addProperty2: AddProperty = {name: "parent_type", value: this.picker.current_type}
-    const props = [addProperty1, addProperty2];
+    let props = [addProperty1, addProperty2];
+    if (this.use_source_url) {
+      const addProperty3:AddProperty = {name: "use_source_url", value: String(this.use_source_url)}
+      props.push(addProperty3)
+    }
     const addgriddap: AddRequest = {
       addProperties: props,
       url: this.erddapFormControl.value,

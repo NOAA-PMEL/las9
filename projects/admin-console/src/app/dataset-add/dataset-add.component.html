@@ -35,7 +35,8 @@
           <!-- https://stackoverflow.com/questions/46502294/angular-change-matinput-size#new-answer -->
           <input class="textbox-width" type="text" pInputText [formControl]="erddapFormControl" placeholder="ERDDAP griddap URL (http[s]://host.domain/erddap/griddap) or an ERDDAP search that returns only griddap datasets">
           <p-footer>
-            <button pButton class="p-button-primary" type="submit" (click)="submitGriddap()" label="Add"></button>
+            <button pButton class="p-button-primary" type="submit" (click)="submitGriddap()" label="Add"></button>&nbsp;&nbsp;
+<!--            <p-checkbox [label]="'Use Source URL'" [(ngModel)]="use_source_url" [binary]="true"></p-checkbox>-->
           </p-footer>
         </p-card>
       </div>

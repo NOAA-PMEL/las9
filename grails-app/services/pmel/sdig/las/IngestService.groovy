@@ -68,7 +68,14 @@ class IngestService {
 
 
     Dataset processRequest(AddRequest addRequest, Object parent) {
-
+        boolean use_source_url = false
+        List<AddProperty> ps = addRequest.getAddProperties()
+        for (i in 0..<ps.size() )  {
+            AddProperty ap = ps.get(i)
+            if ( ap.getName().equals("use_source_url") ) {
+                use_source_url = Boolean.valueOf(ap.getValue()).booleanValue()
+            }
+        }
         if (addRequest.getType().equals("netcdf")) {
             return ingest(null, addRequest.getUrl())
         } else if (addRequest.getType().equals("dsg")) {
@@ -76,7 +83,7 @@ class IngestService {
         } else if (addRequest.getType().equals("tabledap")) {
             return ingestAllFromErddap(addRequest.getUrl(), addRequest.getAddProperties())
         } else if (addRequest.getType().equals("griddap")) {
-            return datasetFromGriddapInfo(addRequest.getUrl())
+            return datasetFromGriddapInfo(addRequest.getUrl(), use_source_url)
         } else if (addRequest.getType().equals("thredds")) {
             def phash = null;
             if (parent instanceof Dataset) {
@@ -808,7 +815,7 @@ class IngestService {
         all
     }
     @NotTransactional
-    def griddapDirect(String url, Object parent) {
+    def griddapDirect(String url, Object parent, boolean use_source_url) {
         if ( url.endsWith("griddap") || url.endsWith("griddap/") ) {
             if ( !url.endsWith("/") ) url = url + "/"
             url = url + "index.json?page=1&itemsPerPage=20000"
@@ -879,7 +886,7 @@ class IngestService {
                 List<String> inst_url_list = collected_datasets.get(inst_title)
                 log.info("Adding data sets for " + inst_title)
                 inst_url_list.each { String ds_url ->
-                    Dataset end_point = datasetFromGriddapInfo(ds_url)
+                    Dataset end_point = datasetFromGriddapInfo(ds_url, use_source_url)
                     if (end_point != null)
                         inst_dataset.addToDatasets(end_point)
                 }
@@ -904,7 +911,7 @@ class IngestService {
         }
     }
 
-    private Dataset datasetFromGriddapInfo(String url) {
+    private Dataset datasetFromGriddapInfo(String url, boolean use_source_url) {
         def info_url = url
         if (!info_url.endsWith("/")) info_url = url + "/"
         info_url = info_url.replace("griddap", "info") + "index.json"
@@ -1112,13 +1119,13 @@ class IngestService {
                                         log.debug("Rejecting grid type " + geo + " for griddap ERDDAP.")
                                         return null;
                                     }
-                                } else if ( metaName.equals("sourceUrl") ) {
+                                } else if ( metaName.equals("sourceUrl") && use_source_url ) {
                                     sourceUrl = metaRow.get(4).getAsString()
                                     if ( sourceUrl.startsWith("http") ) {
                                         dataset.setHash(getDigest(sourceUrl))
                                         dataset.setUrl(sourceUrl)
+                                        log.info("Switching to source url of " + sourceUrl);
                                     }
-                                    log.info("Switching to source url of " + sourceUrl);
                                 }
                             } else if (metaVar.equals("time")) {
                                 String metaName = metaRow.get(2).getAsString();
@@ -1160,7 +1167,7 @@ class IngestService {
                             // Gets reset if there is a long_name attribute
                             variable.setTitle(metaRow.get(1).getAsString())
                             // Use if available
-                            if ( sourceUrl != null ) {
+                            if ( sourceUrl != null && use_source_url ) {
                                 variable.setUrl(sourceUrl);
                             } else {
                                 variable.setUrl(url);

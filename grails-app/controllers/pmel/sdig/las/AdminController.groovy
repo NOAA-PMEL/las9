@@ -302,16 +302,6 @@ class AdminController {
         parent.save(flush: true, failOnError: true);
         log.info("Finished UAF ingest, Site saved");
     }
-    @NotTransactional
-    def addGriddap() {
-
-        String url = params.url
-        if (url == null)
-            url = "https://upwell.pfeg.noaa.gov/erddap/griddap/index.json?page=1&itemsPerPage=20000"
-        ingestService.griddapDirect(url)
-        log.info("Finished UAF ingest from " + url)
-
-    }
     def testGriddapURL() {
         String url = params.url
         if (url == null)
@@ -329,13 +319,14 @@ class AdminController {
         def requestJSON = request.JSON
 
         AddRequest addReq = new AddRequest(requestJSON)
-
+        AddRequest originalRequest = addReq
         List<AddProperty> props = addReq.getAddProperties()
 
         def parent_type;
         def parent_id;
         def empty_name;
         def empty_inst_regex;
+        boolean use_source_url = false;
 
         def parent;
 
@@ -349,6 +340,8 @@ class AdminController {
                 empty_name = property.value;
             } else if ( property.name == "inst_regex") {
                 empty_inst_regex = property.value
+            } else if ( property.name == "use_source_url") {
+                use_source_url = Boolean.valueOf("use_source_url").booleanValue()
             }
         }
 
@@ -367,7 +360,6 @@ class AdminController {
              */
 
             if ( addReq.url.contains("erddap/search") ) {
-                AddRequest originalRequest = addReq;
                 def surl = addReq.url;
                 surl = surl.replace(".html", ".json")
                 String json = lasProxy.executeGetMethodAndReturnResult(surl)
@@ -403,7 +395,7 @@ class AdminController {
                 }
             } else {
                 if (addReq.getType().equals("griddap")) {
-                    ingestService.griddapDirect(addReq.getUrl(), parent)
+                    ingestService.griddapDirect(addReq.getUrl(), parent, use_source_url)
                 } else {
 
                     Dataset dataset = ingestService.processRequest(addReq, parent);

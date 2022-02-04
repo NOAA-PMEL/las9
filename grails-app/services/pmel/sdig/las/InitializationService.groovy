@@ -471,6 +471,32 @@ class InitializationService {
             point_location.save(failOnError: true)
         }
 
+
+        // Aslo do this same thing for points on the surface...
+
+
+        Product surface_point_location = Product.findByName("Surface_point_location_value_plot")
+        if ( !surface_point_location ) {
+            surface_point_location = new Product([name:"Surface_point_location_value_plot", title: "Location Plot", view: "xy", data_view: "xyt", ui_group: "Maps", geometry: GeometryType.POINT, product_order: "100001"])
+
+            Operation operation_extract_data = new Operation([name: "ERDDAPExtract", type: "erddap", service_action: "erddap"])
+            operation_extract_data.setResultSet(resultsService.getNetcdfFile())
+
+            Operation operation_location_plot = new Operation([name: "Location_plot", service_action: "Plot_insitu_XY_locations_and_values", type: "ferret", output_template: "zoom"])
+            operation_location_plot.setResultSet(resultsService.getPlotResults())
+            // #Timeseries_palette,#size,#fill_levels,#deg_min_sec,#set_aspect,#use_graticules,#full_data,#bathymetry_style
+            operation_location_plot.addToMenuOptions(optionsService.getPalettes())
+            operation_location_plot.addToTextOptions(optionsService.getFill_levels())
+            operation_location_plot.addToYesNoOptions(optionsService.getDeg_min_sec())
+            operation_location_plot.addToYesNoOptions(optionsService.getSet_aspect())
+            operation_location_plot.addToMenuOptions(optionsService.getUse_graticules())
+
+            surface_point_location.addToOperations(operation_extract_data)
+            surface_point_location.addToOperations(operation_location_plot)
+
+            surface_point_location.save(failOnError: true)
+        }
+
         /*
 
  <operation chained="true" ID="Profile_Plot_2D" service_action="Plot_2D_Profile" order="0101" category="visualization">

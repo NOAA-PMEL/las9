@@ -31,6 +31,8 @@ import {ScrollPanelModule} from "primeng/scrollpanel";
 import {ButtonModule} from "primeng/button";
 import {BreadcrumbModule} from 'primeng/breadcrumb';
 import {MenuItem} from 'primeng/api';
+import {RadioButtonModule} from "primeng/radiobutton";
+import {CheckboxModule} from "primeng/checkbox";
 
 @NgModule({
     declarations: [
@@ -61,7 +63,9 @@ import {MenuItem} from 'primeng/api';
     CardModule,
     ScrollPanelModule,
     ButtonModule,
-    BreadcrumbModule
+    BreadcrumbModule,
+    RadioButtonModule,
+    CheckboxModule
   ],
     providers: [
         DatasetService,
