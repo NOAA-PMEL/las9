@@ -177,6 +177,11 @@ task compileAngular (type:Exec) {
     commandLine 'sh','./build-admin.sh'
 }
 
+bootWarMainClassName.dependsOn compileGsonViews
+// Make sure the new admin index.gsp is copied over before compiling this stuff
+compileGroovyPages.dependsOn compileAngular
+compileGsonViews.dependsOn compileAngular
+
 // Make the assembly of the war file depend on compiling the GWT
 war.dependsOn cleanout, compileGWT, compileAngular
 war {
