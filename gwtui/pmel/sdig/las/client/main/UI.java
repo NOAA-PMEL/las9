@@ -1908,11 +1908,23 @@ public class UI implements EntryPoint {
     MethodCallback <SearchResults> searchCallback = new MethodCallback<SearchResults>() {
         @Override
         public void onFailure(Method method, Throwable throwable) {
+            if ( xDataURL != null && !xDataURL.isEmpty() ) {
+                xDataURL = null;
+            }
+            if ( xDatasetTitle != null && !xDatasetTitle.isEmpty() ) {
+                xDatasetTitle = null;
+            }
             layout.hideDataProgress();
         }
 
         @Override
         public void onSuccess(Method method, SearchResults searchResults) {
+            if ( xDataURL != null && !xDataURL.isEmpty() ) {
+                xDataURL = null;
+            }
+            if ( xDatasetTitle != null && !xDatasetTitle.isEmpty() ) {
+                xDatasetTitle = null;
+            }
             layout.hideDataProgress();
             layout.clearDatasets();
             layout.panel1.setVisible(true);
@@ -1946,12 +1958,6 @@ public class UI implements EntryPoint {
                     layout.addSelection(searchDatasets.get(i));
                 }
                 layout.dataItem.expand();
-                if ( xDataURL != null && !xDataURL.isEmpty() ) {
-                    xDataURL = null;
-                }
-                if ( xDatasetTitle != null && !xDatasetTitle.isEmpty() ) {
-                    xDatasetTitle = null;
-                }
             } else {
                 MaterialToast.fireToast("No data sets found matching your search terms.");
                 // if it was a URL search and it failed, don't try again

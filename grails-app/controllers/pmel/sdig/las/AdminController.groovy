@@ -319,7 +319,6 @@ class AdminController {
         def requestJSON = request.JSON
 
         AddRequest addReq = new AddRequest(requestJSON)
-        AddRequest originalRequest = addReq
         List<AddProperty> props = addReq.getAddProperties()
 
         def parent_type;
@@ -368,14 +367,19 @@ class AdminController {
                 for (int i = 0; i < rows.size(); i++) {
                     JSONArray row = rows.get(i)
                     def durl;
-                    if ( originalRequest.getType().equals("tabledap") ) {
+                    AddRequest searchResultRequest;
+                    if ( addReq.getType().equals("tabledap") ) {
                         durl = row.getString(2)
+                        searchResultRequest = new AddRequest(addReq.properties) // Make a copy
+                        searchResultRequest.setUrl(durl)
+                        searchResultRequest.setType("dsg")
                     } else {
                         durl = row.getString(0)
+                        searchResultRequest = new AddRequest(addReq.properties) // Make a copy
+                        searchResultRequest.setUrl(durl)
+                        searchResultRequest.setType("griddap")
                     }
-                    AddRequest dsgReq = originalRequest
-                    dsgReq.setUrl(durl)
-                    Dataset dataset = ingestService.processRequest(dsgReq, parent);
+                    Dataset dataset = ingestService.processRequest(searchResultRequest, parent);
                     if ( dataset != null ) {
                         if (dataset.status == Dataset.INGEST_FAILED) {
                             JSON.use("deep") {

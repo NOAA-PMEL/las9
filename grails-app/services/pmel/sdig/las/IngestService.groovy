@@ -2386,12 +2386,19 @@ class IngestService {
             if (start != null && end != null) {
                 double min = Double.valueOf(start).doubleValue()
                 double max = Double.valueOf(end).doubleValue()
-                double size = max - min
-                double step = size / 10.0d
-                zAxis.setMax(max)
-                zAxis.setMin(min)
-                zAxis.setDelta(step)
-                zAxis.setSize(size)
+                if ( Math.abs(max-min) < 1e-9 ) {
+                    zAxis.setMax(max)
+                    zAxis.setMin(min)
+                    zAxis.setDelta(0.0d)
+                    zAxis.setSize(1.0d)
+                } else {
+                    double size = max - min
+                    double step = size / 10.0d
+                    zAxis.setMax(max)
+                    zAxis.setMin(min)
+                    zAxis.setDelta(step)
+                    zAxis.setSize(size)
+                }
 
             } else {
                 log.debug("Rejected " + url + " for no Z metadata.")
