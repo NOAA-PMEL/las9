@@ -165,12 +165,17 @@ class SearchController {
                 } else if (result instanceof Variable) {
                     Variable v = (Variable) result;
                     Dataset d = v.getDataset();
-                    if (d.id > 0) {
-                        Dataset full = Dataset.get(d.id)
-                        // In case the indexes contain dataset that are no longer defined
-                        if (full) {
-                            datasetSet.add(full)
+                    // Why a variable with no data set? Shouldn't happen.
+                    if (d) {
+                        if (d.id > 0) {
+                            Dataset full = Dataset.get(d.id)
+                            // In case the indexes contain dataset that are no longer defined
+                            if (full) {
+                                datasetSet.add(full)
+                            }
                         }
+                    } else {
+                        log.debug("Variable with id=" + v.id + " has a null data set parent.")
                     }
                 }
             }
