@@ -186,7 +186,7 @@ class SearchController {
                 }
             }
 
-            log.debug(datasetList.size() + "search results found.")
+            log.debug(datasetList.size() + "search results found. Sending " + "start="+start + "  end="+end)
             SearchResults searchResults = new SearchResults();
             searchResults.setDatasetList(datasetList[start..<end])
             searchResults.setTotal(datasetList.size())
