@@ -83,23 +83,29 @@ class SearchController {
                 }
                 // Search the exact
                 for (int i = 0; i < exact.size(); i++) {
+                    log.debug("Data set property: " + exact_name.get(i))
+                    log.debug("      exact value: " + exact.get(i))
                     def dpResults = Dataset.createCriteria().list {
                         and {
                             eq(exact_name.get(i), exact.get(i))
                             eq("variableChildren", true)
                         }
                     }
+                    log.debug("          found: " + dpResults.size())
                     results.addAll(dpResults)
                 }
 
                 // Search the "like"
                 for (int i = 0; i < like.size(); i++) {
+                    log.debug("Data set property: " + like_name.get(i))
+                    log.debug("       like value: " + like.get(i))
                     def dpResults = Dataset.createCriteria().list {
                         and {
                             ilike(like_name.get(i), like.get(i))
                             eq("variableChildren", true)
                         }
                     }
+                    log.debug("          found: " + dpResults.size())
                     results.addAll(dpResults)
                 }
             }
@@ -123,16 +129,22 @@ class SearchController {
                     }
                     // Every exact match
                     for (int j = 0; j < vexact.size(); j++) {
+                        log.debug("Data set property: " + vexact_name.get(i))
+                        log.debug("      exact value: " + vexact.get(i))
                         def vpResults = Variable.createCriteria().list {
                             eq(vexact_name.get(i), vexact.get(i))
                         }
+                        log.debug("          found: " + vpResults.size())
                         results.addAll(vpResults)
                     }
                     // All the "like" matches
                     for (int j = 0; j < vlike.size(); j++) {
+                        log.debug("Data set property: " + vlike_name.get(i))
+                        log.debug("       like value: " + vlike.get(i))
                         def vpResults = Variable.createCriteria().list {
                             ilike(vlike_name.get(i), vlike.get(i))
                         }
+                        log.debug("          found: " + vpResults.size())
                         results.addAll(vpResults)
                     }
                 }
@@ -174,6 +186,7 @@ class SearchController {
                 }
             }
 
+            log.debug(datasetList.size() + "search results found.")
             SearchResults searchResults = new SearchResults();
             searchResults.setDatasetList(datasetList[start..<end])
             searchResults.setTotal(datasetList.size())
