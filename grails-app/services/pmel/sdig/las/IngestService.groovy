@@ -1216,6 +1216,14 @@ class IngestService {
                 vt.setDataset(dataset)
                 intervals = intervals + "t"
             }
+            if ( !dataset.getGeoAxisX()  ) {
+                log.info("No X-axis for data set " + url)
+                return null
+            }
+            if ( !dataset.getGeoAxisY() ) {
+                log.info("No Y-axis for data set " + url)
+                return null
+            }
 
             for (int vit = 0; vit < dataset.getVariables().size(); vit++) {
                 Variable variable = (Variable) dataset.getVariables().get(vit)
@@ -1227,14 +1235,6 @@ class IngestService {
                     variable.save(failOnError: true)
             }
 
-            if ( !dataset.getGeoAxisX()  ) {
-                log.info("No X-axis for data set " + url)
-                return null
-            }
-            if ( !dataset.getGeoAxisY() ) {
-                log.info("No Y-axis for data set " + url)
-                return null
-            }
             if (dataset.validate()) {
                 dataset.setStatus(Dataset.INGEST_FINISHED)
                 dataset.save(failOnError: true)

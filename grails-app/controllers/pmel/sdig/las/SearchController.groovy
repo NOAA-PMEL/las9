@@ -14,7 +14,7 @@ class SearchController {
 
         def lookup = []
 
-        // This matcher and regex grabs either blank separated words or groups of works in quotes.
+        // This matcher and regex grabs either blank separated words or groups of words in quotes.
         // https://stackoverflow.com/questions/3366281/tokenizing-a-string-but-ignoring-delimiters-within-quotes
         String regex = "\"([^\"]*)\"|(\\S+)";
         List<Dataset> datasetList = new ArrayList<>();
@@ -191,7 +191,7 @@ class SearchController {
                 }
             }
 
-            log.debug(datasetList.size() + "search results found. Sending " + "start="+start + "  end="+end)
+            log.debug(datasetList.size() + " search results found. Sending " + "start="+start + "  end="+end)
             SearchResults searchResults = new SearchResults();
             searchResults.setDatasetList(datasetList[start..<end])
             searchResults.setTotal(datasetList.size())
