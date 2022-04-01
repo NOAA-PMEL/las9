@@ -1,0 +1,6 @@
+import pmel.sdig.las.NameValuePair
+
+model {
+  NameValuePair nameValuePair
+}
+json g.render(nameValuePair)

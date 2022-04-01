@@ -254,7 +254,8 @@ public class DateTimeWidget extends MaterialPanel {
             lo_day.clear();
             hi_day.clear();
 
-
+            lo_day.setGrid("s12");
+            hi_day.setGrid("s12");
 
             for(int i = 0; i < pairs.size(); i++ ) {
                 NameValuePair pair = tAxis.getNameValuePairs().get(i);
@@ -269,6 +270,8 @@ public class DateTimeWidget extends MaterialPanel {
             lo_date = pairs.get(0).getValue();
             hi_date = pairs.get(pairs.size()-1).getValue();
         } else {
+            lo_day.setGrid("s2");
+            hi_day.setGrid("s2");
             lo_date = tAxis.getStart();
             hi_date = tAxis.getEnd();
             String p = tAxis.getPeriod();

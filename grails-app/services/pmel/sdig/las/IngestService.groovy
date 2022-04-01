@@ -276,9 +276,6 @@ class IngestService {
                         // Get the basics
                         String start = range.getStart().toString()
                         String end = range.getEnd().toString()
-                        long size = time.getSize()
-                        tIndex = size / 2
-                        if (tIndex <= 0) tIndex = 1
                         String timeunits = time.getUnitsString()
                         Attribute cal = time.findAttribute("calendar")
                         String calendar = "standard"
@@ -287,121 +284,142 @@ class IngestService {
                         }
                         String shortname = time.getShortName()
                         String timetitle = time.getFullName()
-
-                        // Figure out the delta (as a period string) and where the time is marked (beginning, middle, or end of the period
-                        double[] tb1 = time.getBound1()
-                        double[] tb2 = time.getBound2()
-                        double[] times = time.getCoordValues()
-
-                        CalendarDateUnit cdu = CalendarDateUnit.of(calendar, timeunits)
-                        Period p0 = null
-                        String position0 = getPosition(times[0], tb1[0], tb2[0])
-                        boolean constant_position = true
-                        boolean regular = time.isRegular()
-                        tAxis = new TimeAxis()
-
-                        TimeUnit tu = time.getTimeResolution()
-                        double du = tu.getValue()
-                        String u = tu.getUnitString()
-
-                        if (times.length > 1) {
-                            if (regular) {
-                                // TODO sec, week, year?
-                                if (u.contains("second")) {
-                                    // Period(int years, int months, int weeks, int days, int hours, int minutes, int seconds, int millis)
-                                    int seconds = (int) du
-                                    p0 = new Period(0, 0, 0, 0, 0, 0, seconds, 0)
-                                    int hours = p0.normalizedStandard(PeriodType.hours()).getHours();
-                                    int days = p0.normalizedStandard(PeriodType.days()).getDays();
-                                    if (hours < 24) {
-                                        p0 = new Period(0, 0, 0, 0, hours, 0, 0, 0);
-                                    } else if (days > 27) {
-                                        p0 = new Period(0, 1, 0, 0, 0, 0, 0, 0);
-                                    } else {
-                                        p0 = new Period(0, 0, 0, days, 0, 0, 0, 0);
-                                    }
-                                } else if (u.contains("hour")) {
-                                    for (int d = 0; d < 27; d++) {
-                                        if (du < 23.5 * d && du < 23.5 * d + 1) {
-                                            // The unit is hours and the delta is less than 25 so use the hours delta
-                                            // Period(int years, int months, int weeks, int days, int hours, int minutes, int seconds, int millis)
-                                            int hrs = (int) du;
-                                            p0 = new Period(0, 0, 0, 0, hrs, 0, 0, 0)
-                                        }
-                                    }
-                                    if (p0 == null) {
-                                        if (du > 28 * 24 && du < 33 * 24) {
-                                            p0 = new Period(0, 1, 0, 0, 0, 0, 0, 0)
-                                        }
-                                    }
-
-                                } else if (u.contains("day")) {
-                                    if (du < 1) {
-                                        int hours = du * 24.0d
-                                        p0 = new Period(0, 0, 0, 0, hours, 0, 0, 0)
-                                    } else {
-                                        p0 = new Period(0, 0, 0, (int) du, 0, 0, 0, 0)
-                                    }
-
-                                }
-                            } else {
-                                p0 = getPeriod(cdu, times[0], times[1])
-                                if (!isMonotonic(times)) {
-                                    log.debug("Time axis is not monotonic... quitting.")
-                                }
-                                int hours = p0.getHours()
-                                int days = p0.getDays()
-                                int months = p0.getMonths()
-                                int years = p0.getYears()
-                                if (days >= 28) {
-                                    p0 = new Period(0, 1, 0, 0, 0, 0, 0, 0)
-                                } else if (hours == 0 && days > 0) {
-                                    p0 = new Period(0, 0, 0, days, 0, 0, 0, 0)
-                                } else if (hours > 0) {
-                                    p0 = new Period(0, 0, 0, 0, hours, 0, 0, 0)
-                                }
-                            }
-
-                            Period period = getPeriod(cdu, times[0], times[times.length - 1])
-
-                            log.debug("Setting delta " + pf.print(p0))
-                            if (p0 != null) {
-                                tAxis.setDelta(pf.print(p0))
-                            } else {
-                                tAxis.setDelta("P1D")
-                            }
-                            log.debug("Setting data set period to " + pf.print(period))
-                            if (period != null) {
-                                tAxis.setPeriod(pf.print(period))
-                            }
-
-                        } else if (times.length) {
-                            tAxis.setDelta(pf.print(Period.ZERO));
-                            tAxis.setPeriod(pf.print(Period.ZERO))
-                        }
-
-
-                        tAxis.setStart(start)
-                        tAxis.setEnd(end)
-                        if (start.contains("0000") && end.contains("0000")) {
-                            tAxis.setClimatology(true)
-                        } else {
+                        if (start == end || time.size() == 1) {
+                            NameValuePair p = new NameValuePair()
+                            p.setName(start)
+                            p.setValue(start)
+                            tAxis = new TimeAxis()
+                            tAxis.addToNameValuePairs(p)
+                            p.setTimeAxis(tAxis)
+                            tAxis.setCalendar('gregorian')
+                            tAxis.setName(shortname)
+                            tAxis.setTitle(shortname)
+                            tAxis.setUnits('pairs')
+                            tAxis.setStart(start)
+                            tAxis.setEnd(end)
+                            tAxis.setPeriod('0')
+                            tAxis.setDelta('0')
                             tAxis.setClimatology(false)
+                            tAxis.setSize(1)
+                        } else {
+                            long size = time.getSize()
+                            tIndex = size / 2
+                            if (tIndex <= 0) tIndex = 1
+
+
+                            // Figure out the delta (as a period string) and where the time is marked (beginning, middle, or end of the period
+                            double[] tb1 = time.getBound1()
+                            double[] tb2 = time.getBound2()
+                            double[] times = time.getCoordValues()
+
+                            CalendarDateUnit cdu = CalendarDateUnit.of(calendar, timeunits)
+                            Period p0 = null
+                            String position0 = getPosition(times[0], tb1[0], tb2[0])
+                            boolean constant_position = true
+                            boolean regular = time.isRegular()
+                            tAxis = new TimeAxis()
+
+                            TimeUnit tu = time.getTimeResolution()
+                            double du = tu.getValue()
+                            String u = tu.getUnitString()
+
+                            if (times.length > 1) {
+                                if (regular) {
+                                    // TODO sec, week, year?
+                                    if (u.contains("second")) {
+                                        // Period(int years, int months, int weeks, int days, int hours, int minutes, int seconds, int millis)
+                                        int seconds = (int) du
+                                        p0 = new Period(0, 0, 0, 0, 0, 0, seconds, 0)
+                                        int hours = p0.normalizedStandard(PeriodType.hours()).getHours();
+                                        int days = p0.normalizedStandard(PeriodType.days()).getDays();
+                                        if (hours < 24) {
+                                            p0 = new Period(0, 0, 0, 0, hours, 0, 0, 0);
+                                        } else if (days > 27) {
+                                            p0 = new Period(0, 1, 0, 0, 0, 0, 0, 0);
+                                        } else {
+                                            p0 = new Period(0, 0, 0, days, 0, 0, 0, 0);
+                                        }
+                                    } else if (u.contains("hour")) {
+                                        for (int d = 0; d < 27; d++) {
+                                            if (du < 23.5 * d && du < 23.5 * d + 1) {
+                                                // The unit is hours and the delta is less than 25 so use the hours delta
+                                                // Period(int years, int months, int weeks, int days, int hours, int minutes, int seconds, int millis)
+                                                int hrs = (int) du;
+                                                p0 = new Period(0, 0, 0, 0, hrs, 0, 0, 0)
+                                            }
+                                        }
+                                        if (p0 == null) {
+                                            if (du > 28 * 24 && du < 33 * 24) {
+                                                p0 = new Period(0, 1, 0, 0, 0, 0, 0, 0)
+                                            }
+                                        }
+
+                                    } else if (u.contains("day")) {
+                                        if (du < 1) {
+                                            int hours = du * 24.0d
+                                            p0 = new Period(0, 0, 0, 0, hours, 0, 0, 0)
+                                        } else {
+                                            p0 = new Period(0, 0, 0, (int) du, 0, 0, 0, 0)
+                                        }
+
+                                    }
+                                } else {
+                                    p0 = getPeriod(cdu, times[0], times[1])
+                                    if (!isMonotonic(times)) {
+                                        log.debug("Time axis is not monotonic... quitting.")
+                                    }
+                                    int hours = p0.getHours()
+                                    int days = p0.getDays()
+                                    int months = p0.getMonths()
+                                    int years = p0.getYears()
+                                    if (days >= 28) {
+                                        p0 = new Period(0, 1, 0, 0, 0, 0, 0, 0)
+                                    } else if (hours == 0 && days > 0) {
+                                        p0 = new Period(0, 0, 0, days, 0, 0, 0, 0)
+                                    } else if (hours > 0) {
+                                        p0 = new Period(0, 0, 0, 0, hours, 0, 0, 0)
+                                    }
+                                }
+
+                                Period period = getPeriod(cdu, times[0], times[times.length - 1])
+
+                                log.debug("Setting delta " + pf.print(p0))
+                                if (p0 != null) {
+                                    tAxis.setDelta(pf.print(p0))
+                                } else {
+                                    tAxis.setDelta("P1D")
+                                }
+                                log.debug("Setting data set period to " + pf.print(period))
+                                if (period != null) {
+                                    tAxis.setPeriod(pf.print(period))
+                                }
+
+                            } else if (times.length) {
+                                tAxis.setDelta(pf.print(Period.ZERO));
+                                tAxis.setPeriod(pf.print(Period.ZERO))
+                            }
+
+
+                            tAxis.setStart(start)
+                            tAxis.setEnd(end)
+                            if (start.contains("0000") && end.contains("0000")) {
+                                tAxis.setClimatology(true)
+                            } else {
+                                tAxis.setClimatology(false)
+                            }
+                            tAxis.setSize(size)
+                            tAxis.setUnits(time.getUnitsString())
+                            tAxis.setCalendar(calendar)
+                            tAxis.setTitle(title)
+                            tAxis.setName(shortname)
+
+                            if (constant_position) {
+                                tAxis.setPosition(position0)
+                            }
+
+
                         }
-                        tAxis.setSize(size)
-                        tAxis.setUnits(time.getUnitsString())
-                        tAxis.setCalendar(calendar)
-                        tAxis.setTitle(title)
-                        tAxis.setName(shortname)
-
-                        if (constant_position) {
-                            tAxis.setPosition(position0)
-                        }
-
-
-                    } else {
-
-                    }
+                }
                 }
 
                 CoordinateAxis xca = gcs.getXHorizAxis()

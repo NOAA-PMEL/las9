@@ -1,0 +1,7 @@
+import pmel.sdig.las.TimeAxis
+model {
+    TimeAxis timeAxis
+}
+json g.render(timeAxis, [excludes: ["nameValuePairs", "variable"]]) {
+    nameValuePairs g.render(template: "nameValuePairs", model: [nameValuePairs: timeAxis.getNameValuePairs()])
+}

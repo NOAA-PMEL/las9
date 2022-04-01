@@ -14,7 +14,7 @@ if (dataset.variableChildren) {
         geoAxisX g.render(dataset.geoAxisX, [excludes: ["variable"]])
         geoAxisY g.render(dataset.geoAxisY, [excludes: ["variable"]])
         verticalAxis g.render(template: "verticalAxis", model: [verticalAxis: dataset.verticalAxis])
-        timeAxis g.render(dataset.timeAxis, [excludes: ["variable"]])
+        timeAxis g.render(template: "timeAxis", model: [timeAxis: dataset.timeAxis])
     }
 } else {
     json g.render(dataset, [excludes: ["datasets", "variables", "vectors", "parent"]]) {

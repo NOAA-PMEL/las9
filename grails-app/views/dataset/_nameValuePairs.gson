@@ -1,0 +1,5 @@
+import pmel.sdig.las.NameValuePair
+model {
+    List<NameValuePair> nameValuePairs
+}
+json tmpl.nameValuePair(nameValuePairs)
