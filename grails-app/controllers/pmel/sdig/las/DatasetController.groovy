@@ -1,5 +1,8 @@
 package pmel.sdig.las
 
+import grails.async.Promise
+
+import static grails.async.Promises.*
 import grails.converters.JSON
 import grails.gorm.transactions.Transactional
 
@@ -47,8 +50,20 @@ class DatasetController {
             if ( dataset.variableChildren && dataset.getStatus().equals(Dataset.INGEST_NOT_STARTED) ) {
                 dataset.setStatus(Dataset.INGEST_STARTED)
                 dataset.setMessage("This data set has not been ingested by LAS. That process has been started. This may take a while, but you can click again anytime to see if it's finished.")
-                dataset.save(flush: true)
-                ingestService.addVariablesAndSaveFromThredds(dataset.getUrl(), dataset.getHash(), null, true)
+                Dataset.withNewTransaction {
+                    dataset.save(flush: true)
+                }
+                log.debug("Adding variables to " + dataset.getUrl() + " which has variableChildren = " + dataset.variableChildren)
+                Promise p = task {
+                    ingestService.addVariablesAndSaveFromThredds(dataset.getUrl(), dataset.getHash(), null, true)
+                }
+                p.onError { Throwable err ->
+                    log.error("An error occured ${err.message}")
+                }
+                p.onComplete { result ->
+                    log.info('Finished ingesting requested data set.')
+                }
+
             } else if ( dataset.variableChildren && (dataset.getStatus().equals(Dataset.INGEST_STARTED) ) ) {
                 IngestStatus ingestStatus = IngestStatus.findByHash(dataset.getHash())
                 String message = "This the process of ingesting this data set has been started. This may take a while, but you can check back anytime to see if it's finished."

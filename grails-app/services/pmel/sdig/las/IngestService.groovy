@@ -723,6 +723,26 @@ class IngestService {
                             dataset.addToVariables(v)
                             v.save(failOnError: true, flush: true)
                         }
+                        GeoAxisX xAxis = temp2.getGeoAxisX()
+                        if (xAxis) {
+                            xAxis.setDataset(dataset)
+                            dataset.setGeoAxisX(xAxis)
+                        }
+                        GeoAxisY yAxis = temp2.getGeoAxisY()
+                        if (yAxis) {
+                            yAxis.setDataset(dataset)
+                            dataset.setGeoAxisY(yAxis)
+                        }
+                        VerticalAxis zAxis = temp2.getVerticalAxis()
+                        if (zAxis) {
+                            zAxis.setDataset(dataset)
+                            dataset.setVerticalAxis(zAxis)
+                        }
+                        TimeAxis tAxis = temp2.getTimeAxis()
+                        if (tAxis) {
+                            tAxis.setDataset(dataset)
+                            dataset.setTimeAxis(tAxis)
+                        }
                         dataset.setStatus(Dataset.INGEST_FINISHED)
                         if (dataset.validate()) {
                             addVectors(dataset)
@@ -1693,7 +1713,12 @@ class IngestService {
             if (child.access) {
                 Access a = child.getAccess(ServiceType.OPENDAP)
                 if (a != null) {
-                    access = true
+                    def child_url = a.getStandardUrlName()
+                    if ( !child_url.endsWith(".png") ) {
+                        access = true
+                    } else {
+                        remove.add(child)
+                    }
                 }
             }
             if (child.getName().contains("automated cleaning process") || child.getName().toLowerCase().contains("tds quality") || child.getName().contains("An error occurred processing")) {
@@ -1746,7 +1771,9 @@ class IngestService {
         List<thredds.client.catalog.Dataset> kids = invDataset.getDatasetsLogical();
         for (int i = 0; i < kids.size(); i++) {
             thredds.client.catalog.Dataset kid = kids.get(i)
-            if (!kid.getName().toLowerCase().contains("quality rubric") && !kid.getName().contains("automated cleaning process")) {
+            if (!kid.getName().toLowerCase().contains("quality rubric") &&
+                !kid.getName().contains("automated cleaning process") &&
+                !kid.getName().endsWith(".png")) {
                 Dataset dkid = processDataset(kid, parentHash, full, saveToDataset)
                 if (dkid != null) {
                     if (dkid.variableChildren || (dkid.getDatasets() && dkid.getDatasets().size() > 0)) {
