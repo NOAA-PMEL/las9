@@ -923,13 +923,15 @@ class IngestService {
                 inst_dataset.setHash(getDigest(inst_title))
                 List<String> inst_url_list = collected_datasets.get(inst_title)
                 log.info("Adding data sets for " + inst_title)
-                inst_url_list.each { String ds_url ->
+                int size_of_list = inst_url_list.size()
+                for (int iterIDX = 0; iterIDX < size_of_list; iterIDX++) {
+                    String ds_url = inst_url_list.get(iterIDX)
                     Dataset end_point = datasetFromGriddapInfo(ds_url, use_source_url)
                     if (end_point != null)
                         inst_dataset.addToDatasets(end_point)
                 }
-                if ( inst_dataset.getDatasets() && inst_dataset.getDatasets().size() > 0) {
-                    if ( parent instanceof Site) {
+                if (inst_dataset.getDatasets() && inst_dataset.getDatasets().size() > 0) {
+                    if (parent instanceof Site) {
                         Site site = parent;
                         Site.withTransaction {
                             site.addToDatasets(inst_dataset)
@@ -939,7 +941,7 @@ class IngestService {
                         Dataset dp = parent
                         Dataset.withTransaction {
                             dp.addToDatasets(inst_dataset)
-                            dp.save(flush:true)
+                            dp.save(flush: true)
                         }
                     }
                 }
@@ -1053,6 +1055,8 @@ class IngestService {
                                             timeAxis.setUnits("year");
                                             // Period(int years, int months, int weeks, int days, int hours, int minutes, int seconds, int millis)
                                             p0 = new Period(1, 0, 0, 0, 0, 0, 0, 0)
+                                        } else {
+                                            p0 = new Period(0, 0, 0, days, 0, 0, 0, 0)
                                         }
 
                                     } else if (timeParts[0].contains("h")) {
