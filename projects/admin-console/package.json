@@ -28,7 +28,7 @@
     "install": "^0.13.0",
     "json-schema": ">=0.4.0",
     "lodash-es": "^4.17.21",
-    "npm": "^8.3.2",
+    "npm": "^8.11.0",
     "primeflex": "^3.1.2",
     "primeicons": "^5.0.0",
     "primeng": "^13.1.0",
