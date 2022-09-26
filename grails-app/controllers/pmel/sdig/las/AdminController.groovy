@@ -655,6 +655,26 @@ class AdminController {
                 } else {
                     ds.datasets = null;
                 }
+                if (ds.getGeoAxisY()) {
+                    GeoAxisX x = ds.getGeoAxisX()
+                    x.setDataset(ds)
+                    ds.setGeoAxisX(x)
+                }
+                if ( ds.getGeoAxisY() ) {
+                    GeoAxisY y = ds.getGeoAxisY()
+                    y.setDataset(ds)
+                    ds.setGeoAxisY(y)
+                }
+                if ( ds.getVerticalAxis() ) {
+                    VerticalAxis v = ds.getVerticalAxis()
+                    v.setDataset(ds)
+                    ds.setVerticalAxis(v)
+                }
+                if ( ds.getTimeAxis() ) {
+                    TimeAxis t = ds.getTimeAxis()
+                    t.setDataset(ds)
+                    ds.setTimeAxis(t)
+                }
                 dataset.addToDatasets(ds)
                 ds.save(flush: true)
                 addChildren(ds, file)
@@ -667,18 +687,6 @@ class AdminController {
                 def json = jsonSlurper.parse(file)
                 removeIds(json)
                 Variable variable = new Variable(json)
-                if ( variable.getGeoAxisX() ) {
-                    variable.getGeoAxisX().setVariable(variable)
-                }
-                if ( variable.getGeoAxisY() ) {
-                    variable.getGeoAxisY().setVariable(variable)
-                }
-                if ( variable.getTimeAxis() ) {
-                    variable.getTimeAxis().setVariable(variable)
-                }
-                if ( variable.getVerticalAxis() ) {
-                    variable.getVerticalAxis().setVariable(variable)
-                }
                 dataset.addToVariables(variable)
                 variable.setDataset(dataset)
                 variable.save(flush: true)

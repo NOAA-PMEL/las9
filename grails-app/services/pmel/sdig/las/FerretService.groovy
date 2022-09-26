@@ -134,10 +134,10 @@ class FerretService {
                 String variable_name = variable.getName()
                 String variable_title = variable.getTitle()
 
-                def x = variable.getGeoAxisX()
-                def y = variable.getGeoAxisY()
-                def z = variable.getVerticalAxis()
-                def t = variable.getTimeAxis()
+                def x = dataset.getGeoAxisX()
+                def y = dataset.getGeoAxisY()
+                def z = dataset.getVerticalAxis()
+                def t = dataset.getTimeAxis()
 
                 def hash = "${dhash}_${vhash}"
 

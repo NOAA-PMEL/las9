@@ -11,7 +11,7 @@ buildscript {
     }
 }
 
-version "9.7.5"
+version "9.7.6"
 group "las"
 
 apply plugin:"eclipse"

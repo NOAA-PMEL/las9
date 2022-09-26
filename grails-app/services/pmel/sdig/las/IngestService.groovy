@@ -141,28 +141,24 @@ class IngestService {
             } else {
                 nd = ingestFromErddap_using_json(dataset.getUrl(), new ArrayList<AddProperty>())
             }
-            if (nd && nd.getVariables()) {
-                List<Variable> nvariables = nd.getVariables();
-                List<Variable> ovariables = dataset.getVariables();
-                for (int i = 0; i < nvariables.size(); i++) {
-                    Variable nv = nvariables.get(i)
-                    for (int j = 0; j < ovariables.size(); j++) {
-                        Variable ov = ovariables.get(j)
-                        // Not every variable has a time axis!
-                        if (nv.name == ov.name && ov.getTimeAxis() && nv.getTimeAxis()) {
-                            TimeAxis ot = ov.getTimeAxis();
-                            TimeAxis nt = nv.getTimeAxis();
-                            ot.setStart(nt.getStart())
-                            ot.setEnd(nt.getEnd())
-                            ot.setSize(nt.getSize())
-                            ot.setPeriod(nt.getPeriod())
-                            // In the IOOS models, the units change to the first date of the period.
-                            ot.setUnits(nt.getUnits())
-                            ot.save(flush: true)
-                        }
+            if ( nd ) {
+                TimeAxis nta = nd.getTimeAxis()
+                if (nta != null) {
+                    TimeAxis ot = dataset.getTimeAxis();
+                    if (ot != null) {
+                        ot.setStart(nta.getStart())
+                        ot.setEnd(nta.getEnd())
+                        ot.setSize(nta.getSize())
+                        ot.setPeriod(nta.getPeriod())
+                        // In the IOOS models, the units change to the first date of the period.
+                        ot.setUnits(nta.getUnits())
+                        log.info('Updating time axis to ' + nta.getStart() + ' and ' + nta.getEnd())
+                        ot.save(flush: true)
                     }
+                    dataset.save(flush: true)
                 }
-                dataset.save(flush: true)
+            } else {
+                log.info("Unable to ingest data set from source to update time axis.")
             }
             log.info("Finished updating time information axis for " + dataset.getTitle())
         }
