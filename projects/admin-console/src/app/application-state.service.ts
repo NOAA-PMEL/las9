@@ -167,7 +167,7 @@ export interface Changes {
   timeAxis: any
 }
 export interface UpdateSpec {
-  datset: any,
+  dataset: any,
   cron_spec: string
 }
 
