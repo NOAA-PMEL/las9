@@ -30,16 +30,19 @@ export class DatasetUpdateComponent implements OnInit {
 
     this.stateChanges = this.applicationStateService.stateChanged.subscribe(state => {
       if (state) {
-        this.update_dataset = state.dataset_to_edit_updates;
-        if ( this.update_dataset ) {
-          this.edit_dataset_update = true;
-          this.dataset_title = this.update_dataset.title;
-          if (this.update_dataset.datasetProperties) {
-            for (let i = 0; i < this.update_dataset.datasetProperties.length; i++) {
-              let property: DatasetProperty = this.update_dataset.datasetProperties[i];
-              if ( property.type == 'update') {
-                this.cron_spec = property.value;
-                this.update_property = property;
+        // If it's show progress we're doing an update so don't set the form
+        if (!state.showProgress) {
+          this.update_dataset = state.dataset_to_edit_updates;
+          if (this.update_dataset) {
+            this.edit_dataset_update = true;
+            this.dataset_title = this.update_dataset.title;
+            if (this.update_dataset.datasetProperties) {
+              for (let i = 0; i < this.update_dataset.datasetProperties.length; i++) {
+                let property: DatasetProperty = this.update_dataset.datasetProperties[i];
+                if (property.type == 'update') {
+                  this.cron_spec = property.value;
+                  this.update_property = property;
+                }
               }
             }
           }
@@ -57,7 +60,7 @@ export class DatasetUpdateComponent implements OnInit {
   save() {
     let update: UpdateSpec = new class implements UpdateSpec {
       cron_spec: string;
-      datset: any;
+      dataset: any;
     };
     this.applicationStateService.setForRequest();
     update["cron_spec"] = this.cron_spec;

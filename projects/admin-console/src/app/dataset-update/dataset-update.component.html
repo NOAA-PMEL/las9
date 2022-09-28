@@ -2,7 +2,7 @@
 <p-dialog [style]="{width: '80%'}" [(visible)]="edit_dataset_update" header="{{dataset_title}}" (onHide)="close()">
   <h3>Update Specification</h3>
   <div class="p-field">
-    <input placeholder="cron format" id="update" aria-describedby="update-help" class="p-inputtext-lg" [(ngModel)]="cron_spec" pInputText />
+    <input placeholder="cron format" type="text" id="update" aria-describedby="update-help" class="p-inputtext-lg" [(ngModel)]="cron_spec" pInputText />
     <p></p>
     <h4 id="update-help">Use an expression in cron format to specify how often this data set gets updated.</h4>
     <p class="eightp">Expression should be made up of 6 parts.</p>
@@ -19,8 +19,8 @@
     <p class="eightp"><strong>0 15 0,12 * * ?</strong> updates every day at 15 past midnight and 15 past noon.</p>
     <p class="eightp"><strong>0 0 12 ? * 3</strong> updates every Tuesday at noon.</p>
     <p class="eightp"><strong>0 45 13 5 * ?</strong> updates at 1:45 pm on the fifth of every month.</p>
-    <h4>To cancel an existing update just use a BLANK entry.</h4>
+    <h4>To cancel an existing update just use the word "cancel" as the entry.</h4>
     <p class="eightp">You can read more about <a target="_blank" href="http://www.quartz-scheduler.org/documentation/quartz-2.2.2/tutorials/tutorial-lesson-06.html">cron expressions in the Quartz documentation.</a></p>
   </div>
-  <button pButton class="p-button-primary" (click)="save()" label="Save"></button>
+  <button pButton class="p-button-primary" type=submit (click)="save()" label="Save"></button>
 </p-dialog>
