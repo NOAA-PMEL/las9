@@ -67,7 +67,7 @@
 
                 </m:MaterialNavSection>
                 <m:MaterialNavBrand marginLeft="8" ui:field="brand" text="LAS title will go here." fontSize="1.3em"/>
-                <m:MaterialLink text="LAS v9.7.5" float="RIGHT" marginRight="16" href="https://github.com/NOAA-PMEL/las9/wiki" target="_blank"></m:MaterialLink>
+                <m:MaterialLink text="LAS v9.7.6" float="RIGHT" marginRight="16" href="https://github.com/NOAA-PMEL/las9/wiki" target="_blank"></m:MaterialLink>
                 <!--                <m:MaterialPanel addStyleNames="valign-vertical">-->
                 <!--                    <m:MaterialLink ui:field="btnSearch" iconType="SEARCH" iconColor="WHITE" float="RIGHT"/>-->
                 <!--&lt;!&ndash;                    <m:MaterialButton marginTop="14" ui:field="openAdvancedSearch" text="Advanced Search" float="RIGHT" marginRight="16"></m:MaterialButton>&ndash;&gt;-->

@@ -24,6 +24,31 @@ apply plugin:"org.grails.grails-gsp"
 apply plugin: "org.grails.grails-web"
 apply plugin: "org.grails.plugins.views-json"
 
+compileJava {
+    sourceCompatibility = '1.8'
+    targetCompatibility = '1.8'
+}
+
+compileGroovy {
+    targetCompatibility = '1.8'
+}
+
+compileGroovyPages {
+    targetCompatibility = '1.8'
+}
+
+compileGsonViews {
+    targetCompatibility = '1.8'
+}
+
+compileWebappGroovyPages {
+    targetCompatibility = '1.8'
+}
+
+compileGroovyPages {
+    targetCompatibility = '1.8'
+}
+
 repositories {
     maven { url "https://repo.grails.org/grails/core" }
     maven { url "https://artifacts.unidata.ucar.edu/repository/unidata-all" }
@@ -138,6 +163,8 @@ bootRun {
 tasks.withType(GroovyCompile) {
     configure(groovyOptions) {
         forkOptions.jvmArgs = ['-Xmx1024m']
+        sourceCompatibility('1.8')
+        targetCompatibility('1.8')
     }
 }
 

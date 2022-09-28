@@ -150,6 +150,19 @@ class IngestService {
                         ot.setEnd(nta.getEnd())
                         ot.setSize(nta.getSize())
                         ot.setPeriod(nta.getPeriod())
+                        if ( nta.getNameValuePairs() ) {
+                            def nvps = nta.getNameValuePairs()
+                            List<NameValuePair> replacement_nvps = new ArrayList<>()
+                            for (int nvi = 0; nvi < nvps.size(); nvi++) {
+                                def nvp =  nvps.get(nvi)
+                                def rvp = new NameValuePair()
+                                rvp.setName(nvp.getName())
+                                rvp.setValue(nvp.getValue())
+                                rvp.setTimeAxis(ot)
+                                replacement_nvps.add(rvp)
+                            }
+                            ot.setNameValuePairs(replacement_nvps)
+                        }
                         // In the IOOS models, the units change to the first date of the period.
                         ot.setUnits(nta.getUnits())
                         log.info('Updating time axis to ' + nta.getStart() + ' and ' + nta.getEnd())

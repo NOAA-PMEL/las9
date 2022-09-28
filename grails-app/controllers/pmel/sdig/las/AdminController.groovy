@@ -82,7 +82,8 @@ class AdminController {
                     p.value = cron_spec
                     p.save(flush: true)
                     d.save(flush: true)
-                    if ( !p.value.isEmpty() ) {
+                    if ( p.value !=null && !p.value.isEmpty() &&
+                        !p.value.matches(".*[a-z].*") && !p.value.matches(".*[A-Z].*") ) {
                         updateDatasetJobService.addDatasetUpdate(d.id, p.value)
                     } else {
                         updateDatasetJobService.unscheuleUpdate(d.id)
@@ -97,7 +98,8 @@ class AdminController {
             p.value = cron_spec
             d.addToDatasetProperties(p)
             d.save(flush: true)
-            if ( !p.value.isEmpty() ) {
+            if ( p.value != null && !p.value.isEmpty() &&
+                !p.value.matches(".*[a-z].*") && !p.value.matches(".*[A-Z].*") ) {
                 updateDatasetJobService.addDatasetUpdate(d.id, p.value)
             } else {
                 updateDatasetJobService.unscheuleUpdate(d.id)
