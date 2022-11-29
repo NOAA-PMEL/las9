@@ -167,7 +167,9 @@ class InitializationService {
 
         // This is an attempt to automate the configuration for Ferret as used by F-TDS by writing the config based on the environment/
         // TODO if changes to the Ferret or FerretEnvironment happen in the admin UI, rewrite this file
-        writeFerretXml(ferret, ferretEnvironment)
+        def context_dir = env['SPRING_CONFIG_LOCATION']
+        context_dir = context_dir.replace("/las/application.yml", "")
+        writeFerretXml(ferret, ferretEnvironment, context_dir)
 
         // Write the F-TDS base catalog
         writeFTDSCatalog(ferret)
@@ -256,7 +258,7 @@ class InitializationService {
         }
         catalog.writeTo(configFileWriter).close()
     }
-    def writeFerretXml(Ferret ferret, FerretEnvironment ferretEnvironment) {
+    def writeFerretXml(Ferret ferret, FerretEnvironment ferretEnvironment, String context_dir) {
         Document doc = new Document()
         Element root = new Element("application")
         doc.setRootElement(root)
@@ -305,12 +307,9 @@ class InitializationService {
             if ( ferretEnvironment.getFer_go() )
                 environment.addContent(makeEnvVariable("FER_GO", ferretEnvironment.getFer_go()))
         } else {
-            File outputFile = Holders.grailsApplication.mainContext.getResource("output").file
-            File contextPath = outputFile.getParentFile();
-            String webapp = contextPath.getParent();
             if ( ferretEnvironment.getFer_go() )
-                environment.addContent(makeEnvVariable("FER_GO", ferretEnvironment.getFer_go()+" ${webapp}/las#thredds/WEB-INF/classes/resources/iosp/scripts"))
-            configFileWriter = new FileWriter(new File("${webapp}/las#thredds/WEB-INF/classes/resources/iosp/FerretConfig.xml"))
+                environment.addContent(makeEnvVariable("FER_GO", ferretEnvironment.getFer_go()+" ${context_dir}/ftds/scripts"))
+            configFileWriter = new FileWriter(new File("${context_dir}/ftds/FerretConfig.xml"))
         }
         out.output(doc, configFileWriter)
     }
