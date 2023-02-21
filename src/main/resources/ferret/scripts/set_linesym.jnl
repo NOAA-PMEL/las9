@@ -4,18 +4,18 @@
 ! both bad andgood -- avoids inconsistencies if there are a few 
 ! missing points in one series and not in another.
 
-LET plotvar  = ($ferret_plot_var)
-LET filledvar = missing(plotvar,0)
+LET plot_var  = ($ferret_plot_var)
+LET filledvar = missing(plot_var,0)
 
 ! We could get this out of a STAT command, but @NGD and @NBD need less computation.
 ! For data sampled from a curvilinear datset, the STAT is way more efficient
 
 IF ($do_curvi_xy"0|*>1") THEN 
-   stat plotvar
+   stat plot_var
    let ngood = ($stat_ngood)
    let nbad =  ($stat_nbad)
 ELSE
-   DEFINE SYMBOL  VARSHAPE `plotvar,RETURN=shape`
+   DEFINE SYMBOL  VARSHAPE `plot_var,RETURN=shape`
    CANCEL SYMBOL comma
    IF `STRINDEX("($varshape)", "X") NE 0` THEN
       DEFINE SYMBOL getgood = i=@ngd
