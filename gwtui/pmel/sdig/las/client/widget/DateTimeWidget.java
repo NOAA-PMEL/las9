@@ -925,9 +925,13 @@ public class DateTimeWidget extends MaterialPanel {
                         int menu_hour = lo_hour.getHour(h);
                         int menu_minute = lo_hour.getMinute(h);
                         if ( hour >= menu_hour && hour < menu_hour + 1 ) {
-                            if ( menu_minute >= min && menu_minute < min + delta.getMinutes()) {
-                                lo_hour.setSelectedIndex(h);
-                            }
+			  if (delta.getMinutes() > 0) {
+			    if ( menu_minute >= min && menu_minute < min + delta.getMinutes()) {
+			      lo_hour.setSelectedIndex(h);
+		  	    }
+			  } else {
+			    lo_hour.setSelectedIndex(h);
+			  }
                         }
                     }
                 }
@@ -1045,9 +1049,13 @@ public class DateTimeWidget extends MaterialPanel {
                         int menu_hour = hi_hour.getHour(h);
                         int menu_minute = hi_hour.getMinute(h);
                         if ( hour >= menu_hour && hour < menu_hour + 1 ) {
-                            if ( menu_minute >= min && menu_minute < min + delta.getMinutes()) {
-                                hi_hour.setSelectedIndex(h);
-                            }
+			    if (delta.getMinutes() > ) {
+                              if ( menu_minute >= min && menu_minute < min + delta.getMinutes()) {
+                                  hi_hour.setSelectedIndex(h);
+                              }
+			    } else {
+			         hi_hour.setSelectedIndex(h); 
+			    }
                         }
                     }
                 }
